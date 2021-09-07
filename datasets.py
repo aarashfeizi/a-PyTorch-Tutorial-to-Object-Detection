@@ -1,3 +1,4 @@
+import pandas as pd
 import torch
 from torch.utils.data import Dataset
 import json
@@ -83,3 +84,48 @@ class PascalVOCDataset(Dataset):
         images = torch.stack(images, dim=0)
 
         return images, boxes, labels, difficulties  # tensor (N, 3, 300, 300), 3 lists of N tensors each
+
+class GridDataset(Dataset):
+    """
+    A PyTorch Dataset class to be used in a PyTorch DataLoader to create batches.
+    """
+
+    def __init__(self, data_folder, split, keep_difficult=True):
+        """
+        :param data_folder: folder where data files are stored
+        :param split: split, one of 'TRAIN' or 'TEST'
+        :param keep_difficult: keep or discard objects that are considered difficult to detect?
+        """
+        self.split = split.upper()
+
+        assert self.split in {'TRAIN', 'TEST'}
+
+        self.data_folder = data_folder
+        self.keep_difficult = keep_difficult
+
+        # Read data files
+        dataset_info = pd.read_csv(os.path.join(data_folder, self.split + '_dataset_info.csv'))
+        self.images = list(dataset_info.img)
+        self.boxes = list(zip(dataset_info.x_min, dataset_info.y_min, dataset_info.x_max, dataset_info.y_max))
+        self.labels = list(dataset_info.label)
+
+
+        assert len(self.images) == len(self.boxes)
+        assert len(self.images) == len(self.labels)
+
+    def __getitem__(self, i):
+        # Read image
+        image = Image.open(os.path.join(self.data_folder, self.images[i]), mode='r')
+        image = image.convert('RGB')
+
+        # Read objects in this image (bounding boxes, labels, difficulties)
+        boxes = torch.FloatTensor(self.boxes[i]).reshape(1, -1)  # (n_objects, 4)
+        labels = torch.LongTensor([self.labels[i]])  # (n_objects)
+
+        # Apply transformations
+        image, boxes, labels, _ = transform(image, boxes, labels, None, split=self.split)
+
+        return image, boxes, labels
+
+    def __len__(self):
+        return len(self.images)

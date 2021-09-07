@@ -1,5 +1,5 @@
 from utils import *
-from datasets import PascalVOCDataset
+from datasets import PascalVOCDataset, GridDataset
 from tqdm import tqdm
 from pprint import PrettyPrinter
 
@@ -23,11 +23,11 @@ model = model.to(device)
 model.eval()
 
 # Load test data
-test_dataset = PascalVOCDataset(data_folder,
+test_dataset = GridDataset(data_folder,
                                 split='test',
                                 keep_difficult=keep_difficult)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False,
-                                          collate_fn=test_dataset.collate_fn, num_workers=workers, pin_memory=True)
+                                          num_workers=workers, pin_memory=True)
 
 
 def evaluate(test_loader, model):
@@ -51,7 +51,7 @@ def evaluate(test_loader, model):
 
     with torch.no_grad():
         # Batches
-        for i, (images, boxes, labels, difficulties) in enumerate(tqdm(test_loader, desc='Evaluating')):
+        for i, (images, boxes, labels) in enumerate(tqdm(test_loader, desc='Evaluating')):
             images = images.to(device)  # (N, 3, 300, 300)
 
             # Forward prop.
@@ -66,14 +66,12 @@ def evaluate(test_loader, model):
             # Store this batch's results for mAP calculation
             boxes = [b.to(device) for b in boxes]
             labels = [l.to(device) for l in labels]
-            difficulties = [d.to(device) for d in difficulties]
 
             det_boxes.extend(det_boxes_batch)
             det_labels.extend(det_labels_batch)
             det_scores.extend(det_scores_batch)
             true_boxes.extend(boxes)
             true_labels.extend(labels)
-            true_difficulties.extend(difficulties)
 
         # Calculate mAP
         APs, mAP = calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties)
