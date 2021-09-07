@@ -6,8 +6,8 @@ from PIL import Image
 from PIL import ImageDraw
 import pandas as pd
 
-foreground_org = Image.open("./img_template/grid1.png")
-background_org = Image.open("./gen_dataset.png")
+foreground_org = Image.open("img_template/grid.png")
+background_org = Image.open("img_template/blank.png")
 
 background_size = 512
 # dataset_sizes = [10000, 1000]
