@@ -99,4 +99,4 @@ if __name__ == '__main__':
     img_path = '/media/ssd/ssd data/VOC2007/JPEGImages/000001.jpg'
     original_image = Image.open(img_path, mode='r')
     original_image = original_image.convert('RGB')
-    detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200).show()
+    detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200).save(f'./model_annotated/.png')
