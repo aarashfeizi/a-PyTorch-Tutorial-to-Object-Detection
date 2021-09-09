@@ -84,6 +84,7 @@ def main():
     for epoch in range(start_epoch, epochs):
 
         # Decay learning rate at particular epochs
+        print(f'{epoch} / {epochs}:')
         if epoch in decay_lr_at:
             adjust_learning_rate(optimizer, decay_lr_to)
 
