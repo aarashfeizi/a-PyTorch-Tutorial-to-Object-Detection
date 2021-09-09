@@ -101,7 +101,7 @@ if __name__ == '__main__':
     files = os.listdir(folder_path)
     files = [f for f in files if f.endswith('png') or f.endswith('.jpeg')]
     for f in files:
-        print(i)
+        print(f)
         img_path = os.path.join(folder_path, f)
         original_image = Image.open(img_path, mode='r')
         original_image = original_image.convert('RGB')
