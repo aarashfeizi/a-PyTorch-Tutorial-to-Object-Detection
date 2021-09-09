@@ -35,8 +35,8 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
                     'label': []}
 
     for i in range(split_dataset_size):
-        if i % 1000 == 0:
-            print(i)
+        if i % 100 == 0:
+            print(f'{i} / {split_dataset_size}')
         grid_size = np.random.randint(100, 512)
         max_offset = background_size - grid_size
         foreground = foreground_org.resize((grid_size, grid_size))
