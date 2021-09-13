@@ -10,8 +10,8 @@ foreground_org = Image.open("img_template/grid.png")
 background_org = Image.open("img_template/blank.png")
 
 background_size = 512
-# dataset_sizes = [10000, 1000]
-dataset_sizes = [20, 10]
+dataset_sizes = [50000, 5000]
+# dataset_sizes = [20, 10]
 
 def draw_circles(image, x, y, r=1, color=(255, 0, 0, 255)):
     draw = ImageDraw.Draw(image)
@@ -37,9 +37,11 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
     for i in range(split_dataset_size):
         if i % 100 == 0:
             print(f'{i} / {split_dataset_size}')
-        grid_size = np.random.randint(100, 512)
+        grid_size = np.random.randint(200, 512)
+        division_factor = np.random.randint(1, 11)
+        recolored_foreground = Image.fromarray(np.array(foreground_org) // division_factor)
         max_offset = background_size - grid_size
-        foreground = foreground_org.resize((grid_size, grid_size))
+        foreground = recolored_foreground.resize((grid_size, grid_size))
         background = background_org.resize((background_size, background_size))
         x_offset = np.random.randint(0, max_offset)
         y_offset = np.random.randint(0, max_offset)
