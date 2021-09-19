@@ -9,10 +9,31 @@ import pandas as pd
 grid_org = Image.open("img_template/grid.png")
 legends_org = Image.open("img_template/legends.png")
 background_org = Image.open("img_template/blank.png")
+title1 = Image.open("img_template/title1.png")
+title2 = Image.open("img_template/title2.png")
+title3 = Image.open("img_template/title3.png")
 
 background_size = 512
 dataset_sizes = [50000, 5000]
 # dataset_sizes = [20, 10]
+
+
+base_ds = './gen_dataset'
+os.mkdir(base_ds)
+
+red_color = (215, 33, 33, 255)
+green_color = (61, 155, 53, 255)
+blue_color = (9, 40, 85, 255)
+orange_color = (244, 128, 4, 255)
+you_color = (76, 78, 77, 255)
+purple_color = (68, 45, 123, 255)
+
+colors = [red_color,
+          green_color,
+          blue_color,
+          orange_color,
+          purple_color,
+          you_color]
 
 def draw_rectangle(image, x, y, r=1, color=(255, 0, 0, 255)):
     draw = ImageDraw.Draw(image)
@@ -86,8 +107,6 @@ def draw_circles(image, x, y, r=1, color=(255, 0, 0, 255)):
     draw_rectangle(image, x, y, r, color)
 
 
-base_ds = './gen_dataset/new_shit_ha'
-os.mkdir(base_ds)
 for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
 
     os.mkdir(os.path.join(base_ds, f'images_{split}'))
@@ -105,16 +124,39 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
             print(f'{i} / {split_dataset_size}')
         legend_size = np.random.randint(200, 512)
         grid_size = int(legend_size * 0.9)
+
+        resize_factor = legend_size / legends_org.size[0]
+
         division_factor = np.random.randint(1, 4)
         recolored_grid = Image.fromarray(np.array(grid_org) // division_factor)
+
+
 
         legends = legends_org.resize((legend_size, legend_size))
         grid = recolored_grid.resize((grid_size, grid_size))
 
-        rand_num_circles = np.random.randint(0, 12)
+        rand_title = np.random.randint(0, 3)
+
+        title = None
+
+        diffs = (int((429 - 359) * resize_factor), int((500 - 367) * resize_factor))
+        if rand_title == 0:
+            title_size_pair = (int(title1.size[0] * resize_factor),
+                               int(title1.size[1] * resize_factor))
+            title = title1.resize(title_size_pair)
+        elif rand_title == 1:
+            title_size_pair = (int(title2.size[0] * resize_factor),
+                               int(title2.size[1] * resize_factor))
+            title = title2.resize(title_size_pair)
+        elif rand_title == 2:
+            title_size_pair = (int(title3.size[0] * resize_factor),
+                               int(title3.size[1] * resize_factor))
+            title = title3.resize(title_size_pair)
+
+        if title_size_pair[0] > 512 or title_size_pair[1] > 512:
+            title = None
 
         legends.paste(grid, (legend_size // 10, legend_size // 50), grid)
-
         background = background_org.resize((background_size, background_size))
 
         max_offset = background_size - legend_size
@@ -122,19 +164,15 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
         y_offset = np.random.randint(0, max_offset)
         background.paste(legends, (x_offset, y_offset), legends)
 
-        red_color = (215, 33, 33, 255)
-        green_color = (61, 155, 53, 255)
-        blue_color = (9, 40, 85, 255)
-        orange_color = (244, 128, 4, 255)
-        you_color = (76, 78, 77, 255)
-        purple_color = (68, 45, 123, 255)
+        if title:
+            # x_offset_title = int(x_offset * ((x_offset + legend_size) / (x_offset + title_size_pair[0])))#  todo x_offset + (title_size) / x_offset + (legend_size)
+            # y_offset_title = int(y_offset * ((y_offset + title_size_pair[1]) / (y_offset + legend_size)))
+            x_offset_title = int(x_offset - diffs[0])
+            y_offset_title = int(y_offset - diffs[1])
 
-        colors = [red_color,
-                  green_color,
-                  blue_color,
-                  orange_color,
-                  purple_color,
-                  you_color]
+            background.paste(title, (x_offset_title, y_offset_title), title)
+
+
 
         for color in colors:
             random_x_circle = np.random.randint(int(x_offset) + legend_size // 10, grid_size + int(x_offset) + legend_size // 10)
