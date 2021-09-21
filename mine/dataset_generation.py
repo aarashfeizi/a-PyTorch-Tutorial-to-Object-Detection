@@ -18,7 +18,7 @@ dataset_sizes = [50000, 5000]
 # dataset_sizes = [20, 10]
 
 
-base_ds = './gen_dataset'
+base_ds = './gen_dataset/comeon2'
 os.mkdir(base_ds)
 
 red_color = (215, 33, 33, 255)
@@ -34,6 +34,40 @@ colors = [red_color,
           orange_color,
           purple_color,
           you_color]
+
+def draw_bar_graph(image, x, y, l_x=50, l_y=5, gap=20):
+    draw = ImageDraw.Draw(image)
+
+    random_color_order = np.random.permutation(colors)
+
+
+    for clr in random_color_order:
+
+        if tuple(clr) == you_color:
+            continue
+
+        absolute_leftUpPoint = (x, y)
+        absolute_rightDownPoint = (x + l_x, y + l_y)
+        absolute_twoPointList = [absolute_leftUpPoint, absolute_rightDownPoint]
+
+        bottom_right_x = np.random.uniform(x, x + l_x)
+
+        rightDownPoint = (bottom_right_x, y + l_y)
+
+        twoPointList = (absolute_leftUpPoint, rightDownPoint)
+
+        draw.rectangle(absolute_twoPointList, fill=(221, 221, 221, 225))
+        draw.rectangle(twoPointList, fill=tuple(clr))
+
+        circle_center_x = x - gap * (2 / 5)
+        circle_center_y = y - l_y / 4
+        r = gap * (2 / 5) - 5
+        leftUpPoint = (circle_center_x - r, circle_center_y - r)
+        rightDownPoint = (circle_center_x + r, circle_center_y + r)
+        twoPointList = [leftUpPoint, rightDownPoint]
+        draw.ellipse(twoPointList, fill=tuple(clr))
+
+        y += gap
 
 def draw_rectangle(image, x, y, r=1, color=(255, 0, 0, 255)):
     draw = ImageDraw.Draw(image)
@@ -157,7 +191,13 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
             title = None
 
         legends.paste(grid, (legend_size // 10, legend_size // 50), grid)
-        background = background_org.resize((background_size, background_size))
+
+        if np.random.random() < 0.5:
+            twice_big = False
+            background = background_org.resize((background_size, background_size))
+        else:
+            twice_big = True
+            background = background_org.resize((background_size * 2, background_size))
 
         max_offset = background_size - legend_size
         x_offset = np.random.randint(0, max_offset)
@@ -165,13 +205,22 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
         background.paste(legends, (x_offset, y_offset), legends)
 
         if title:
-            # x_offset_title = int(x_offset * ((x_offset + legend_size) / (x_offset + title_size_pair[0])))#  todo x_offset + (title_size) / x_offset + (legend_size)
-            # y_offset_title = int(y_offset * ((y_offset + title_size_pair[1]) / (y_offset + legend_size)))
             x_offset_title = int(x_offset - diffs[0])
             y_offset_title = int(y_offset - diffs[1])
 
             background.paste(title, (x_offset_title, y_offset_title), title)
 
+        if twice_big:
+            if title:
+                bar_x_offset = x_offset + legends.size[0] + diffs[0] * 2
+            else:
+                bar_x_offset = x_offset + legends.size[0] * 1.2
+
+            bar_y_offset = y_offset + legends.size[0] * 0.25
+            draw_bar_graph(background, bar_x_offset, bar_y_offset,
+                           l_x=legends.size[0],
+                           l_y=legends.size[1] / 40,
+                           gap=legends.size[1] / 7)
 
 
         for color in colors:
