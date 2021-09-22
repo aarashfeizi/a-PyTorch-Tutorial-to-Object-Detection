@@ -66,6 +66,8 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None):
     draw = ImageDraw.Draw(annotated_image)
     font = ImageFont.truetype("./calibril.ttf", 15)
 
+    crops = []
+
     # Suppress specific classes, if needed
     for i in range(det_boxes.size(0)):
         if suppress is not None:
@@ -91,9 +93,11 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None):
         draw.rectangle(xy=textbox_location, fill=label_color_map[det_labels[i]])
         draw.text(xy=text_location, text=(det_labels[i] + str(det_scores_numpy[i])).upper(), fill='white',
                   font=font)
+        crops.append(original_image.crop(box_location[0], box_location[1], box_location[2], box_location[3]))
+        
     del draw
 
-    return annotated_image
+    return annotated_image, crops
 
 
 if __name__ == '__main__':
@@ -105,4 +109,7 @@ if __name__ == '__main__':
         img_path = os.path.join(folder_path, f)
         original_image = Image.open(img_path, mode='r')
         original_image = original_image.convert('RGB')
-        detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200).save(f'./model_annotated/{f}')
+        annotaded_image, crops = detect(original_image, min_score=0.9, max_overlap=0.5, top_k=200)
+        annotaded_image.save(f'./model_annotated/{f}')
+        for i, c in enumerate(crops):
+            c.save(f'./model_cropped/c{i}_{f}')
