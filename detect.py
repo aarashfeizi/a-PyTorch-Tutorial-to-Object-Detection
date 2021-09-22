@@ -101,9 +101,11 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None):
 
 
 if __name__ == '__main__':
-    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/real_images'
+    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/real_images'
+    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/gen_dataset/images_TEST/'
+    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
     files = os.listdir(folder_path)
-    files = [f for f in files if f.endswith('png') or f.endswith('.jpeg')]
+    files = [f for f in files if f.endswith('png') or f.endswith('.jpeg') or f.endswith('.jpg')]
     for f in files:
         print(f)
         img_path = os.path.join(folder_path, f)
