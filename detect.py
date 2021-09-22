@@ -68,6 +68,21 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None):
 
     crops = []
 
+    # cropping images
+    for i in range(det_boxes.size(0)):
+        if suppress is not None:
+            if det_labels[i] in suppress:
+                continue
+
+        box_location = det_boxes[i].tolist()
+        width = box_location[2] - box_location[0]
+        height = box_location[3] - box_location[1]
+        box_location = [max(box_location[0] - int(0.2 * width), 0),
+                        max(box_location[1] - int(0.2 * height), 0),
+                        min(box_location[2] + int(0.2 * width), original_image.size[0]),
+                        min(box_location[3] + int(0.2 * height), original_image.size[1])]
+        crops.append(original_image.crop(box_location))
+
     # Suppress specific classes, if needed
     for i in range(det_boxes.size(0)):
         if suppress is not None:
@@ -93,7 +108,6 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None):
         draw.rectangle(xy=textbox_location, fill=label_color_map[det_labels[i]])
         draw.text(xy=text_location, text=(det_labels[i] + str(det_scores_numpy[i])).upper(), fill='white',
                   font=font)
-        crops.append(original_image.crop(box_location))
         
     del draw
 
