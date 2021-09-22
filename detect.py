@@ -93,7 +93,7 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None):
         draw.rectangle(xy=textbox_location, fill=label_color_map[det_labels[i]])
         draw.text(xy=text_location, text=(det_labels[i] + str(det_scores_numpy[i])).upper(), fill='white',
                   font=font)
-        crops.append(original_image.crop(box_location[0], box_location[1], box_location[2], box_location[3]))
+        crops.append(original_image.crop(box_location))
         
     del draw
 
