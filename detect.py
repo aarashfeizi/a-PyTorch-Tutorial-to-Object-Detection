@@ -59,7 +59,7 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None):
     # If no objects found, the detected labels will be set to ['0.'], i.e. ['background'] in SSD300.detect_objects() in model.py
     if det_labels == ['background']:
         # Just return original image
-        return original_image
+        return original_image, []
 
     # Annotate
     annotated_image = original_image
