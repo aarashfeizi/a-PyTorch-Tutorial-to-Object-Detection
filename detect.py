@@ -125,7 +125,7 @@ if __name__ == '__main__':
         img_path = os.path.join(folder_path, f)
         original_image = Image.open(img_path, mode='r')
         original_image = original_image.convert('RGB')
-        annotaded_image, crops = detect(original_image, min_score=0.9, max_overlap=0.5, top_k=200)
+        annotaded_image, crops = detect(original_image, min_score=0.999, max_overlap=0.5, top_k=200)
         annotaded_image.save(f'./model_annotated/{f}')
         for i, c in enumerate(crops):
             c.save(f'./model_cropped/c{i}_{f}')
