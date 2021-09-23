@@ -9,7 +9,7 @@ pp = PrettyPrinter()
 # Parameters
 data_folder = './'
 keep_difficult = True  # difficult ground truth objects must always be considered in mAP calculation, because these objects DO exist!
-batch_size = 64
+batch_size = 128
 workers = 4
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 checkpoint = './checkpoint_ssd300.pth.tar'
@@ -79,7 +79,7 @@ def evaluate(test_loader, model):
             true_labels.extend(labels)
 
         # Calculate mAP
-        APs, mAP = calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, true_difficulties)
+        APs, mAP = calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, None)
 
     # Print AP for each class
     pp.pprint(APs)
