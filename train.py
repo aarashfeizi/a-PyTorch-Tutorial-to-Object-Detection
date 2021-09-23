@@ -7,7 +7,7 @@ from datasets import PascalVOCDataset, GridDataset, PointDataset
 from utils import *
 
 # Data parameters
-data_folder = './mine/gen_dataset/local_train/'  # folder with data files
+data_folder = './mine/xy_dataset/'  # folder with data files
 keep_difficult = True  # use objects considered difficult to detect?
 
 # Model parameters
@@ -17,7 +17,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Learning parameters
 checkpoint = None  # path to model checkpoint, None if none
-batch_size = 32  # batch size
+batch_size = 128  # batch size
 iterations = 120000  # number of iterations to train
 workers = 4  # number of workers for loading data in the DataLoader
 print_freq = 200  # print training status every __ batches

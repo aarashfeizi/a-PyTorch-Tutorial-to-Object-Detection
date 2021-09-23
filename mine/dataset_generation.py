@@ -18,7 +18,7 @@ background_size = 512
 dataset_sizes = [20, 10]
 
 
-base_ds = './gen_dataset/xy_dataset'
+base_ds = './xy_dataset'
 os.mkdir(base_ds)
 
 red_color = (215, 33, 33, 255)
