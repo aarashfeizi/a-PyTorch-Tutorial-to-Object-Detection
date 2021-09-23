@@ -14,8 +14,8 @@ title2 = Image.open("img_template/title2.png")
 title3 = Image.open("img_template/title3.png")
 
 background_size = 512
-# dataset_sizes = [50000, 5000]
-dataset_sizes = [20, 10]
+dataset_sizes = [50000, 5000]
+# dataset_sizes = [20, 10]
 
 
 base_ds = './xy_dataset'
@@ -353,7 +353,7 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
             dataset_info[f'x_max_{colorname}'] += [bbox[2]]
             dataset_info[f'y_max_{colorname}'] += [bbox[3]]
 
-            dataset_info[f'label_{colorname}'] += [30 + idx]
+            dataset_info[f'label_{colorname}'] += [idx]
 
         dataset_info['img'] += [f'images_{split}/{i}.png']
 
