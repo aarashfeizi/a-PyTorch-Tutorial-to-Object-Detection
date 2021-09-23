@@ -1,5 +1,5 @@
 from utils import *
-from datasets import PascalVOCDataset, GridDataset
+from datasets import PascalVOCDataset, GridDataset, PointDataset
 from tqdm import tqdm
 from pprint import PrettyPrinter
 
@@ -23,11 +23,16 @@ model = model.to(device)
 model.eval()
 
 # Load test data
-test_dataset = GridDataset(data_folder,
+# test_dataset = GridDataset(data_folder,
+#                                 split='test',
+#                                 keep_difficult=keep_difficult)
+
+test_dataset = PointDataset(data_folder,
                                 split='test',
                                 keep_difficult=keep_difficult)
+
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False,
-                                          num_workers=workers, pin_memory=True)
+                                          num_workers=workers, pin_memory=True, collate_fn=test_dataset.collate_fn)
 
 
 def evaluate(test_loader, model):
