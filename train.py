@@ -3,7 +3,7 @@ import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
 from model import SSD300, MultiBoxLoss
-from datasets import PascalVOCDataset, GridDataset
+from datasets import PascalVOCDataset, GridDataset, PointDataset
 from utils import *
 
 # Data parameters
@@ -65,9 +65,14 @@ def main():
     criterion = MultiBoxLoss(priors_cxcy=model.priors_cxcy).to(device)
 
     # Custom dataloaders
-    train_dataset = GridDataset(data_folder,
-                                     split='train',
-                                     keep_difficult=keep_difficult)
+
+    train_dataset = PointDataset(data_folder,
+                                split='train',
+                                keep_difficult=keep_difficult)
+
+    # train_dataset = GridDataset(data_folder,
+    #                                  split='train',
+    #                                  keep_difficult=keep_difficult)
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=workers,
                                                pin_memory=True)  # note that we're passing the collate function here
 

@@ -129,3 +129,78 @@ class GridDataset(Dataset):
 
     def __len__(self):
         return len(self.images)
+
+class PointDataset(Dataset):
+    """
+    A PyTorch Dataset class to be used in a PyTorch DataLoader to create batches.
+    """
+
+    def __init__(self, data_folder, split, keep_difficult=True):
+        """
+        :param data_folder: folder where data files are stored
+        :param split: split, one of 'TRAIN' or 'TEST'
+        :param keep_difficult: keep or discard objects that are considered difficult to detect?
+        """
+        self.split = split.upper()
+
+        assert self.split in {'TRAIN', 'TEST'}
+
+        self.data_folder = data_folder
+        self.keep_difficult = keep_difficult
+
+        # Read data files
+        dataset_info = pd.read_csv(os.path.join(data_folder, self.split + '_dataset_info.csv'))
+        self.images = list(dataset_info.img)
+        self.boxes_you = list(
+            zip(dataset_info.x_min_you, dataset_info.y_min_you,
+                dataset_info.x_max_you, dataset_info.y_max_you))
+        self.boxes_red = list(
+            zip(dataset_info.x_min_red, dataset_info.y_min_red,
+                dataset_info.x_max_red, dataset_info.y_max_red))
+        self.boxes_green = list(
+            zip(dataset_info.x_min_green, dataset_info.y_min_green,
+                dataset_info.x_max_green, dataset_info.y_max_green))
+        self.boxes_orange = list(
+            zip(dataset_info.x_min_orange, dataset_info.y_min_orange,
+                dataset_info.x_max_orange, dataset_info.y_max_orange))
+        self.boxes_purple = list(
+            zip(dataset_info.x_min_purple, dataset_info.y_min_purple,
+                dataset_info.x_max_purple, dataset_info.y_max_purple))
+        self.boxes_blue = list(
+            zip(dataset_info.x_min_blue, dataset_info.y_min_blue,
+                dataset_info.x_max_blue, dataset_info.y_max_blue))
+
+        self.boxes = list(zip(self.boxes_red,
+                              self.boxes_green,
+                              self.boxes_blue,
+                              self.boxes_orange,
+                              self.boxes_purple,
+                              self.boxes_you))
+
+        self.labels = list(zip(dataset_info.label_red,
+                               dataset_info.label_green,
+                               dataset_info.label_blue,
+                               dataset_info.label_orange,
+                               dataset_info.label_purple,
+                               dataset_info.label_you))
+
+
+        assert len(self.images) == len(self.boxes)
+        assert len(self.images) == len(self.labels)
+
+    def __getitem__(self, i):
+        # Read image
+        image = Image.open(os.path.join(self.data_folder, self.images[i]), mode='r')
+        image = image.convert('RGB')
+
+        # Read objects in this image (bounding boxes, labels, difficulties)
+        boxes = torch.FloatTensor(self.boxes[i]).reshape(1, -1)  # (n_objects, 4)
+        labels = torch.LongTensor([self.labels[i]])  # (n_objects)
+
+        # Apply transformations
+        image, boxes, labels, _ = transform(image, boxes, labels, None, split=self.split)
+
+        return image, boxes, labels
+
+    def __len__(self):
+        return len(self.images)
