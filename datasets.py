@@ -5,7 +5,7 @@ import json
 import os
 from PIL import Image
 from utils import transform
-
+import numpy as np
 
 class PascalVOCDataset(Dataset):
     """
@@ -170,14 +170,21 @@ class PointDataset(Dataset):
             zip(dataset_info.x_min_blue, dataset_info.y_min_blue,
                 dataset_info.x_max_blue, dataset_info.y_max_blue))
 
-        self.boxes = list(zip(self.boxes_red,
-                              self.boxes_green,
-                              self.boxes_blue,
-                              self.boxes_orange,
-                              self.boxes_purple,
-                              self.boxes_you))
+        self.boxes_red = [np.array(l) for l in self.boxes_red]
+        self.boxes_green = [np.array(l) for l in self.boxes_green]
+        self.boxes_blue = [np.array(l) for l in self.boxes_blue]
+        self.boxes_orange = [np.array(l) for l in self.boxes_orange]
+        self.boxes_purple = [np.array(l) for l in self.boxes_purple]
+        self.boxes_you = [np.array(l) for l in self.boxes_you]
 
-        self.labels = list(zip(dataset_info.label_red,
+        self.boxes = np.array(zip(self.boxes_red,
+                                  self.boxes_green,
+                                  self.boxes_blue,
+                                  self.boxes_orange,
+                                  self.boxes_purple,
+                                  self.boxes_you))
+
+        self.labels = np.array(zip(dataset_info.label_red,
                                dataset_info.label_green,
                                dataset_info.label_blue,
                                dataset_info.label_orange,
