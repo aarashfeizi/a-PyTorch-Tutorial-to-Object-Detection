@@ -177,19 +177,19 @@ class PointDataset(Dataset):
         self.boxes_purple = [np.array(l) for l in self.boxes_purple]
         self.boxes_you = [np.array(l) for l in self.boxes_you]
 
-        self.boxes = np.array(zip(self.boxes_red,
+        self.boxes = np.array(list(zip(self.boxes_red,
                                   self.boxes_green,
                                   self.boxes_blue,
                                   self.boxes_orange,
                                   self.boxes_purple,
-                                  self.boxes_you))
+                                  self.boxes_you)))
 
-        self.labels = np.array(zip(dataset_info.label_red,
+        self.labels = np.array(list(zip(dataset_info.label_red,
                                dataset_info.label_green,
                                dataset_info.label_blue,
                                dataset_info.label_orange,
                                dataset_info.label_purple,
-                               dataset_info.label_you))
+                               dataset_info.label_you)))
 
 
         assert len(self.images) == len(self.boxes)
