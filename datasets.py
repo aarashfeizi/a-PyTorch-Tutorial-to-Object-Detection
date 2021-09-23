@@ -202,7 +202,7 @@ class PointDataset(Dataset):
 
         # Read objects in this image (bounding boxes, labels, difficulties)
         boxes = torch.FloatTensor(self.boxes[i])  # (n_objects, 4)
-        labels = torch.LongTensor([self.labels[i]])  # (n_objects)
+        labels = torch.LongTensor([self.labels[i]])[0]  # (n_objects)
 
         # Apply transformations
         image, boxes, labels, _ = transform(image, boxes, labels, None, split=self.split)
