@@ -353,7 +353,7 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
             dataset_info[f'x_max_{colorname}'] += [bbox[2]]
             dataset_info[f'y_max_{colorname}'] += [bbox[3]]
 
-            dataset_info[f'label_{colorname}'] += [idx]
+            dataset_info[f'label_{colorname}'] += [idx + 1]
 
         dataset_info['img'] += [f'images_{split}/{i}.png']
 
