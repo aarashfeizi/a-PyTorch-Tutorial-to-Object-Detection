@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load model checkpoint
-checkpoint = 'checkpoint_ssd300.pth.tar'
+checkpoint = 'checkpoint_ssd300_2.pth.tar'
 checkpoint = torch.load(checkpoint)
 start_epoch = checkpoint['epoch'] + 1
 print('\nLoaded checkpoint from epoch %d.\n' % start_epoch)
@@ -93,10 +93,10 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_pre
                 box_location = v[1].tolist()
                 width = box_location[2] - box_location[0]
                 height = box_location[3] - box_location[1]
-                box_location = [max(box_location[0] - int(0.2 * width), 0),
-                                max(box_location[1] - int(0.2 * height), 0),
-                                min(box_location[2] + int(0.2 * width), original_image.size[0]),
-                                min(box_location[3] + int(0.2 * height), original_image.size[1])]
+                box_location = [max(box_location[0] - int(0.13 * width), 0),
+                                max(box_location[1] - int(0.13 * height), 0),
+                                min(box_location[2] + int(0.13 * width), original_image.size[0]),
+                                min(box_location[3] + int(0.13 * height), original_image.size[1])]
                 crops.append(original_image.crop(box_location))
 
         # Suppress specific classes, if needed
@@ -174,7 +174,10 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_pre
 if __name__ == '__main__':
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/real_images'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/gen_dataset/images_TEST/'
-    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
+    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
+    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
+    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/model_cropped_2/'
+    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/xy_dataset/images_TEST/'
     files = os.listdir(folder_path)
     files = [f for f in files if f.endswith('png') or f.endswith('.jpeg') or f.endswith('.jpg')]
     for f in files:
@@ -182,7 +185,11 @@ if __name__ == '__main__':
         img_path = os.path.join(folder_path, f)
         original_image = Image.open(img_path, mode='r')
         original_image = original_image.convert('RGB')
-        annotaded_image, crops = detect(original_image, min_score=0.999, max_overlap=0.5, top_k=200, max_predictions=True)
-        annotaded_image.save(f'./model_annotated/{f}')
-        for i, c in enumerate(crops):
-            c.save(f'./model_cropped/c{i}_{f}')
+        # annotaded_image, crops = detect(original_image, min_score=0.999, max_overlap=0.5, top_k=200)
+        # annotaded_image.save(f'./model_annotated/{f}')
+        # for i, c in enumerate(crops):
+        #     c.save(f'./model_cropped/c{i}_{f}')
+
+
+        annotaded_image, crops = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200, max_predictions=True)
+        annotaded_image.save(f'./model_annotated_points/{f}')
