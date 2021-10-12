@@ -1,4 +1,5 @@
 import os
+import random
 
 import cv2
 import numpy as np
@@ -18,39 +19,42 @@ dataset_sizes = [50000, 5000]
 # dataset_sizes = [20, 10]
 
 
-base_ds = './xy_dataset'
+base_ds = './xy_dataset2'
 os.mkdir(base_ds)
 
-red_color = (215, 33, 33, 255)
-green_color = (61, 155, 53, 255)
-blue_color = (9, 40, 85, 255)
-orange_color = (244, 128, 4, 255)
-you_color = (76, 78, 77, 255)
-purple_color = (68, 45, 123, 255)
+LPC_color = (215, 33, 33, 255)
+GPC_color = (61, 155, 53, 255)
+CPC_color = (9, 40, 85, 255)
+BQ_color = (17, 60, 112, 255)
+NDP_color = (244, 128, 4, 255)
+YOU_color = (76, 78, 77, 255)
+PPC_color = (68, 45, 123, 255)
 
-colors = [red_color,
-          green_color,
-          blue_color,
-          orange_color,
-          purple_color,
-          you_color]
+colors = [NDP_color,
+          GPC_color,
+          YOU_color,
+          LPC_color,
+          BQ_color,
+          CPC_color,
+          PPC_color]
 
-color_names = ['red',
-               'green',
-               'blue',
-               'orange',
-               'purple',
-               'you']
+color_names = ['NDP',
+               'GPC',
+               'YOU',
+               'LPC',
+               'BQ',
+               'CPC',
+               'PPC']
+
 
 def draw_bar_graph(image, x, y, l_x=50, l_y=5, gap=20):
     draw = ImageDraw.Draw(image)
 
     random_color_order = np.random.permutation(colors)
 
-
     for clr in random_color_order:
 
-        if tuple(clr) == you_color:
+        if tuple(clr) == YOU_color:
             continue
 
         absolute_leftUpPoint = (x, y)
@@ -76,6 +80,7 @@ def draw_bar_graph(image, x, y, l_x=50, l_y=5, gap=20):
 
         y += gap
 
+
 def draw_rectangle(image, x, y, r=1, color=(255, 0, 0, 255)):
     draw = ImageDraw.Draw(image)
 
@@ -84,25 +89,24 @@ def draw_rectangle(image, x, y, r=1, color=(255, 0, 0, 255)):
     random_quarter = np.random.randint(0, 4)
     random_pos = np.random.uniform(0, r)
 
-    a = 4 * r # length
-    b = 2 * r # width
+    a = 4 * r  # length
+    b = 2 * r  # width
 
-
-    if random_quarter == 0: # top left
+    if random_quarter == 0:  # top left
         bottom_right_x = x - random_pos
-        bottom_right_y = y - np.sqrt((r**2) - (random_pos ** 2))
+        bottom_right_y = y - np.sqrt((r ** 2) - (random_pos ** 2))
 
         top_left_x = bottom_right_x - a
         top_left_y = bottom_right_y - b
 
-    elif random_quarter == 1: # top right
+    elif random_quarter == 1:  # top right
         bottom_right_x = x + random_pos + a
         bottom_right_y = y - np.sqrt((r ** 2) - (random_pos ** 2))
 
         top_left_x = bottom_right_x - a
         top_left_y = bottom_right_y - b
 
-    elif random_quarter == 2: # bottom right
+    elif random_quarter == 2:  # bottom right
 
         top_left_x = x + random_pos
         top_left_y = y + np.sqrt((r ** 2) - (random_pos ** 2))
@@ -110,7 +114,7 @@ def draw_rectangle(image, x, y, r=1, color=(255, 0, 0, 255)):
         bottom_right_x = top_left_x + a
         bottom_right_y = top_left_y + b
 
-    elif random_quarter == 3: # bottom left
+    elif random_quarter == 3:  # bottom left
         top_left_x = x - random_pos - a
         top_left_y = y + np.sqrt((r ** 2) - (random_pos ** 2))
 
@@ -173,8 +177,6 @@ def create_dataset():
             division_factor = np.random.randint(1, 4)
             recolored_grid = Image.fromarray(np.array(grid_org) // division_factor)
 
-
-
             legends = legends_org.resize((legend_size, legend_size))
             grid = recolored_grid.resize((grid_size, grid_size))
 
@@ -231,10 +233,11 @@ def create_dataset():
                                l_y=legends.size[1] / 40,
                                gap=legends.size[1] / 7)
 
-
             for color in colors:
-                random_x_circle = np.random.randint(int(x_offset) + legend_size // 10, grid_size + int(x_offset) + legend_size // 10)
-                random_y_circle = np.random.randint(int(y_offset) + legend_size // 50, grid_size + int(y_offset) + legend_size // 50)
+                random_x_circle = np.random.randint(int(x_offset) + legend_size // 10,
+                                                    grid_size + int(x_offset) + legend_size // 10)
+                random_y_circle = np.random.randint(int(y_offset) + legend_size // 50,
+                                                    grid_size + int(y_offset) + legend_size // 50)
                 random_circle_r = np.random.randint(grid_size // 40, grid_size // 30)
 
                 draw_circles(background,
@@ -266,43 +269,57 @@ def create_dataset():
         dataset_df = pd.DataFrame(data=dataset_info)
         dataset_df.to_csv(os.path.join(base_ds, f'{split}_dataset_info.csv'), header=True, index=False)
 
+
 # create xy dataset
 for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
 
     os.mkdir(os.path.join(base_ds, f'images_{split}'))
     os.mkdir(os.path.join(base_ds, f'points_{split}'))
 
+    color_names = ['NDP',
+                   'GPC',
+                   'YOU',
+                   'LPC',
+                   'BQ',
+                   'CPC',
+                   'PPC']
+
     dataset_info = {'img': [],
-                    'x_min_you': [],
-                    'y_min_you': [],
-                    'x_max_you': [],
-                    'y_max_you': [],
-                    'label_you': [],
-                    'x_min_red': [],
-                    'y_min_red': [],
-                    'x_max_red': [],
-                    'y_max_red': [],
-                    'label_red': [],
-                    'x_min_green': [],
-                    'y_min_green': [],
-                    'x_max_green': [],
-                    'y_max_green': [],
-                    'label_green': [],
-                    'x_min_blue': [],
-                    'y_min_blue': [],
-                    'x_max_blue': [],
-                    'y_max_blue': [],
-                    'label_blue': [],
-                    'x_min_orange': [],
-                    'y_min_orange': [],
-                    'x_max_orange': [],
-                    'y_max_orange': [],
-                    'label_orange': [],
-                    'x_min_purple': [],
-                    'y_min_purple': [],
-                    'x_max_purple': [],
-                    'y_max_purple': [],
-                    'label_purple': []}
+                    'x_min_NDP': [],
+                    'y_min_NDP': [],
+                    'x_max_NDP': [],
+                    'y_max_NDP': [],
+                    'label_NDP': [],
+                    'x_min_GPC': [],
+                    'y_min_GPC': [],
+                    'x_max_GPC': [],
+                    'y_max_GPC': [],
+                    'label_GPC': [],
+                    'x_min_YOU': [],
+                    'y_min_YOU': [],
+                    'x_max_YOU': [],
+                    'y_max_YOU': [],
+                    'label_YOU': [],
+                    'x_min_LPC': [],
+                    'y_min_LPC': [],
+                    'x_max_LPC': [],
+                    'y_max_LPC': [],
+                    'label_LPC': [],
+                    'x_min_BQ': [],
+                    'y_min_BQ': [],
+                    'x_max_BQ': [],
+                    'y_max_BQ': [],
+                    'label_BQ': [],
+                    'x_min_CPC': [],
+                    'y_min_CPC': [],
+                    'x_max_CPC': [],
+                    'y_max_CPC': [],
+                    'label_CPC': [],
+                    'x_min_PPC': [],
+                    'y_min_PPC': [],
+                    'x_max_PPC': [],
+                    'y_max_PPC': [],
+                    'label_PPC': []}
 
     for i in range(split_dataset_size):
         if i % 100 == 0:
@@ -315,8 +332,6 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
         division_factor = np.random.randint(1, 4)
         recolored_grid = Image.fromarray(np.array(grid_org) // division_factor)
 
-
-
         legends = legends_org.resize((legend_size, legend_size))
         grid = recolored_grid.resize((grid_size, grid_size))
 
@@ -324,14 +339,27 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
         legends.paste(grid, (legend_size // 10, legend_size // 50), grid)
 
         max_offset = background_size - legend_size
-        x_offset = np.random.randint(-1 * int(0.1 * legend_size) - 5 , max_offset + 5)
+        x_offset = np.random.randint(-1 * int(0.1 * legend_size) - 5, max_offset + 5)
         y_offset = np.random.randint(-5, max_offset + int(0.1 * legend_size) + 5)
         background.paste(legends, (x_offset, y_offset), legends)
 
         all_bboxes = []
         for idx, (colorname, color) in enumerate(zip(color_names, colors)):
-            random_x_circle = np.random.randint(int(x_offset) + legend_size // 10, grid_size + int(x_offset) + legend_size // 10)
-            random_y_circle = np.random.randint(int(y_offset) + legend_size // 50, grid_size + int(y_offset) + legend_size // 50)
+            if colorname == 'BQ':
+                if random.random() < 0.5:
+                    dataset_info[f'x_min_{colorname}'] += [None]
+                    dataset_info[f'y_min_{colorname}'] += [None]
+                    dataset_info[f'x_max_{colorname}'] += [None]
+                    dataset_info[f'y_max_{colorname}'] += [None]
+
+                    dataset_info[f'label_{colorname}'] += [None]
+
+                    continue
+
+            random_x_circle = np.random.randint(int(x_offset) + legend_size // 10,
+                                                grid_size + int(x_offset) + legend_size // 10)
+            random_y_circle = np.random.randint(int(y_offset) + legend_size // 50,
+                                                grid_size + int(y_offset) + legend_size // 50)
             random_circle_r = np.random.randint(grid_size // 40, grid_size // 30)
 
             draw_circles(background,
@@ -346,7 +374,6 @@ for split_dataset_size, split in zip(dataset_sizes, ['TRAIN', 'TEST']):
                     random_y_circle + random_circle_r)
 
             all_bboxes.append(bbox)
-
 
             dataset_info[f'x_min_{colorname}'] += [bbox[0]]
             dataset_info[f'y_min_{colorname}'] += [bbox[1]]
