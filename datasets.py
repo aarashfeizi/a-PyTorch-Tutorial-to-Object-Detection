@@ -209,7 +209,7 @@ class PointDataset(Dataset):
         labels = self.labels[i]
         boxes = self.boxes[i]
         for i in range(len(labels)):
-            if labels[i] is None:
+            if labels[i] != labels[i]:
                 labels = labels[:i] + labels[i + 1:]
                 boxes = boxes[:i] + boxes[i + 1:]
                 break
