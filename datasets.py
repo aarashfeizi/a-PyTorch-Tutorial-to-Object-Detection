@@ -206,9 +206,17 @@ class PointDataset(Dataset):
         image = Image.open(os.path.join(self.data_folder, self.images[i]), mode='r')
         image = image.convert('RGB')
 
+        labels = self.labels[i]
+        boxes = self.boxes[i]
+        for i in range(len(labels)):
+            if labels[i] is None:
+                labels = labels[:i] + labels[i + 1:]
+                boxes = boxes[:i] + boxes[i + 1:]
+                break
+
         # Read objects in this image (bounding boxes, labels, difficulties)
-        boxes = torch.FloatTensor(self.boxes[i])  # (n_objects, 4)
-        labels = torch.LongTensor([self.labels[i]])[0]  # (n_objects)
+        boxes = torch.FloatTensor(boxes)  # (n_objects, 4)
+        labels = torch.LongTensor([labels])[0]  # (n_objects)
 
         for i in range(len(labels)):
             if labels[i] is None:
