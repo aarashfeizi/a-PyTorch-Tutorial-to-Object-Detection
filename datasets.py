@@ -151,45 +151,51 @@ class PointDataset(Dataset):
         # Read data files
         dataset_info = pd.read_csv(os.path.join(data_folder, self.split + '_dataset_info.csv'))
         self.images = list(dataset_info.img)
-        self.boxes_you = list(
-            zip(dataset_info.x_min_you, dataset_info.y_min_you,
-                dataset_info.x_max_you, dataset_info.y_max_you))
-        self.boxes_red = list(
-            zip(dataset_info.x_min_red, dataset_info.y_min_red,
-                dataset_info.x_max_red, dataset_info.y_max_red))
-        self.boxes_green = list(
-            zip(dataset_info.x_min_green, dataset_info.y_min_green,
-                dataset_info.x_max_green, dataset_info.y_max_green))
-        self.boxes_orange = list(
-            zip(dataset_info.x_min_orange, dataset_info.y_min_orange,
-                dataset_info.x_max_orange, dataset_info.y_max_orange))
-        self.boxes_purple = list(
-            zip(dataset_info.x_min_purple, dataset_info.y_min_purple,
-                dataset_info.x_max_purple, dataset_info.y_max_purple))
-        self.boxes_blue = list(
-            zip(dataset_info.x_min_blue, dataset_info.y_min_blue,
-                dataset_info.x_max_blue, dataset_info.y_max_blue))
+        self.boxes_YOU = list(
+            zip(dataset_info.x_min_YOU, dataset_info.y_min_YOU,
+                dataset_info.x_max_YOU, dataset_info.y_max_YOU))
+        self.boxes_NDP = list(
+            zip(dataset_info.x_min_NDP, dataset_info.y_min_NDP,
+                dataset_info.x_max_NDP, dataset_info.y_max_NDP))
+        self.boxes_GPC = list(
+            zip(dataset_info.x_min_GPC, dataset_info.y_min_GPC,
+                dataset_info.x_max_GPC, dataset_info.y_max_GPC))
+        self.boxes_LPC = list(
+            zip(dataset_info.x_min_LPC, dataset_info.y_min_LPC,
+                dataset_info.x_max_LPC, dataset_info.y_max_LPC))
+        self.boxes_PPC = list(
+            zip(dataset_info.x_min_PPC, dataset_info.y_min_PPC,
+                dataset_info.x_max_PPC, dataset_info.y_max_PPC))
+        self.boxes_CPC = list(
+            zip(dataset_info.x_min_CPC, dataset_info.y_min_CPC,
+                dataset_info.x_max_CPC, dataset_info.y_max_CPC))
+        self.boxes_BQ = list(
+            zip(dataset_info.x_min_BQ, dataset_info.y_min_BQ,
+                dataset_info.x_max_BQ, dataset_info.y_max_BQ))
 
-        self.boxes_red = [np.array(l) for l in self.boxes_red]
-        self.boxes_green = [np.array(l) for l in self.boxes_green]
-        self.boxes_blue = [np.array(l) for l in self.boxes_blue]
-        self.boxes_orange = [np.array(l) for l in self.boxes_orange]
-        self.boxes_purple = [np.array(l) for l in self.boxes_purple]
-        self.boxes_you = [np.array(l) for l in self.boxes_you]
+        self.boxes_NDP = [np.array(l) for l in self.boxes_NDP]
+        self.boxes_GPC = [np.array(l) for l in self.boxes_GPC]
+        self.boxes_CPC = [np.array(l) for l in self.boxes_CPC]
+        self.boxes_LPC = [np.array(l) for l in self.boxes_LPC]
+        self.boxes_PPC = [np.array(l) for l in self.boxes_PPC]
+        self.boxes_YOU = [np.array(l) for l in self.boxes_YOU]
+        self.boxes_BQ = [np.array(l) for l in self.boxes_BQ]
 
-        self.boxes = np.array(list(zip(self.boxes_red,
-                                  self.boxes_green,
-                                  self.boxes_blue,
-                                  self.boxes_orange,
-                                  self.boxes_purple,
-                                  self.boxes_you)))
+        self.boxes = np.array(list(zip(self.boxes_NDP,
+                                       self.boxes_GPC,
+                                       self.boxes_CPC,
+                                       self.boxes_BQ,
+                                       self.boxes_LPC,
+                                       self.boxes_PPC,
+                                       self.boxes_YOU)))
 
-        self.labels = np.array(list(zip(dataset_info.label_red,
-                               dataset_info.label_green,
-                               dataset_info.label_blue,
-                               dataset_info.label_orange,
-                               dataset_info.label_purple,
-                               dataset_info.label_you)))
+        self.labels = np.array(list(zip(dataset_info.label_NDP,
+                               dataset_info.label_GPC,
+                               dataset_info.label_CPC,
+                               dataset_info.label_BQ,
+                               dataset_info.label_LPC,
+                               dataset_info.label_PPC,
+                               dataset_info.label_YOU)))
 
 
         assert len(self.images) == len(self.boxes)
@@ -203,6 +209,12 @@ class PointDataset(Dataset):
         # Read objects in this image (bounding boxes, labels, difficulties)
         boxes = torch.FloatTensor(self.boxes[i])  # (n_objects, 4)
         labels = torch.LongTensor([self.labels[i]])[0]  # (n_objects)
+
+        for i in range(len(labels)):
+            if labels[i] is None:
+                labels = labels[:i] + labels[i + 1:]
+                boxes = boxes[:i] + boxes[i + 1:]
+                break # there's at most 1 None value
 
         # Apply transformations
         image, boxes, labels, _ = transform(image, boxes, labels, None, split=self.split)
