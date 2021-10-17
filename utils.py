@@ -1,5 +1,8 @@
 import json
+import math
 import os
+
+import numpy as np
 import torch
 import random
 import xml.etree.ElementTree as ET
@@ -11,8 +14,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # voc_labels = ('aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable',
 #               'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor')
 
-voc_labels = ('NDP', 'GPC', 'YOU', 'LPC', 'BQ', 'CPC', 'PPC', 'cat', 'chair', 'cow', 'diningtable',
-              'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'grid')
+# voc_labels = ('NDP', 'GPC', 'YOU', 'LPC', 'BQ', 'CPC', 'PPC', 'cat', 'chair', 'cow', 'diningtable',
+#               'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'grid')
+voc_labels = ('NDP', 'GPC', 'YOU', 'LPC', 'BQ', 'CPC', 'PPC')
 label_map = {k: v + 1 for v, k in enumerate(voc_labels)}
 label_map['background'] = 0
 rev_label_map = {v: k for k, v in label_map.items()}  # Inverse mapping
@@ -723,3 +727,107 @@ def clip_gradient(optimizer, grad_clip):
         for param in group['params']:
             if param.grad is not None:
                 param.grad.data.clamp_(-grad_clip, grad_clip)
+
+
+##
+# 1,1 top left (-4, 4)
+# 348,348 bottom right (4, -4)
+# 44,61 NDP
+# 57,86 GPC
+# 160,104 LPC
+# 238,232 CPC
+# 306,327 PPC
+# 174,174 (0, 0)
+
+
+# -174,174 top left (-4, 4)
+# 174,-174 bottom right (4, -4)
+# -130,113 NDP
+# -117,88 GPC
+# -14,70 LPC
+# 64,-58 CPC
+# 132,-153 PPC
+# 0,0 (0, 0)
+
+# -174,174 top left (-4, 4)
+# 174,-174 bottom right (4, -4)
+# -2.99,2.58 NDP
+# -2.69,2.02 GPC
+# -0.32,1.61 LPC
+# 1.47,-1.33 CPC
+# 3.03,-3.52 PPC
+# 0,0 (0, 0)
+
+NDP_ABS = np.array([-2.99, 2.58])
+GPC_ABS = np.array([-2.69, 2.02])
+LPC_ABS = np.array([-0.32, 1.61])
+CPC_ABS = np.array([1.47, -1.33])
+PPC_ABS = np.array([3.03, -3.52])
+
+constant_points = ['ndp', 'gpc', 'lpc', 'cpc', 'ppc']
+abs_positions = {'ndp': NDP_ABS,
+                 'gpc': GPC_ABS,
+                 'lpc': LPC_ABS,
+                 'cpc': CPC_ABS,
+                 'ppc': PPC_ABS}
+
+def get_distance(A, B):
+    x_a = A[0]
+    y_a = A[1]
+    x_b = B[0]
+    y_b = B[1]
+
+    d2 = (x_a - x_b) ** 2 + (y_a - y_b) ** 2
+
+    return math.sqrt(d2)
+
+def change_coordinates(p1, p2, q1, q2, old_coordinates):
+    a = get_distance(p2, q2) / get_distance(p1, q1)
+    t = p2 - a * p1  # t is a tuple (t1, t2)
+
+    new_coordinates = []
+    for pnt in old_coordinates:
+        new_coordinates.append(a * pnt + t)
+
+    return new_coordinates, (a, t)
+
+def coordinate_change_loss(true_points, pred_points):
+    loss = 0
+    for tp, pp in zip(true_points, pred_points):
+        loss += get_distance(tp, pp)
+
+    return loss
+
+
+def find_you_coordinates(xys): # coordinates is a dictionary with keys: 'ndp', 'gpc', 'lpc', 'cpc', 'ppc', 'you'
+    loss = np.Inf
+    coors = None
+    for idx1, point_name1 in enumerate(constant_points):
+        for idx2, point_name2 in enumerate(constant_points):
+            if idx2 <= idx1:
+                continue
+            new_xys, (a, t) = change_coordinates(p1=xys[point_name1],
+                                                 p2=abs_positions[point_name1],
+                                                 q1=xys[point_name2],
+                                                 q2=abs_positions[point_name2],
+                                                 old_coordinates=[xys['ndp'],
+                                                                  xys['gpc'],
+                                                                  xys['lpc'],
+                                                                  xys['cpc'],
+                                                                  xys['ppc'],
+                                                                  xys['you']])
+
+            new_loss = coordinate_change_loss(true_points=[abs_positions['ndp'],
+                                                           abs_positions['gpc'],
+                                                           abs_positions['lpc'],
+                                                           abs_positions['cpc'],
+                                                           abs_positions['ppc']],
+                                          pred_points=new_xys[:-1])
+
+            if loss > new_loss:
+                coors = new_xys
+                loss = new_loss
+
+
+
+    return coors[-1], coors, loss  # you_xy, all_xys, loss

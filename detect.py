@@ -85,90 +85,90 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_pre
 
     crops = []
 
-    if max_predictions:
+    # if max_predictions:
 
-        # cropping images
-        for k, vs in predictions.items():
-            for v in vs:
-                box_location = v[1].tolist()
-                width = box_location[2] - box_location[0]
-                height = box_location[3] - box_location[1]
-                box_location = [max(box_location[0] - int(0.13 * width), 0),
-                                max(box_location[1] - int(0.13 * height), 0),
-                                min(box_location[2] + int(0.13 * width), original_image.size[0]),
-                                min(box_location[3] + int(0.13 * height), original_image.size[1])]
-                crops.append(original_image.crop(box_location))
-
-        # Suppress specific classes, if needed
-        for k, vs in predictions.items():
-            for v in vs:
-
-                # Boxes
-                box_location = v[1].tolist()
-                draw.rectangle(xy=box_location, outline=label_color_map[k])
-                draw.rectangle(xy=[l + 1. for l in box_location], outline=label_color_map[
-                    k])  # a second rectangle at an offset of 1 pixel to increase line thickness
-                # draw.rectangle(xy=[l + 2. for l in box_location], outline=label_color_map[
-                #     det_labels[i]])  # a third rectangle at an offset of 1 pixel to increase line thickness
-                # draw.rectangle(xy=[l + 3. for l in box_location], outline=label_color_map[
-                #     det_labels[i]])  # a fourth rectangle at an offset of 1 pixel to increase line thickness
-
-                # Text
-                text_size = font.getsize((k + ' ' + str(v[0])).upper())
-                text_location = [box_location[0] + 2., box_location[1] - text_size[1]]
-                textbox_location = [box_location[0], box_location[1] - text_size[1], box_location[0] + text_size[0] + 4.,
-                                    box_location[1]]
-                draw.rectangle(xy=textbox_location, fill=label_color_map[k])
-                draw.text(xy=text_location, text=(k + ' ' + str(v[0])).upper(), fill='white',
-                          font=font)
-
-        del draw
-    else:
-
-        # cropping images
-        for i in range(det_boxes.size(0)):
-            if suppress is not None:
-                if det_labels[i] in suppress:
-                    continue
-
-            box_location = det_boxes[i].tolist()
+    # cropping images
+    for k, vs in predictions.items():
+        for v in vs:
+            box_location = v[1].tolist()
             width = box_location[2] - box_location[0]
             height = box_location[3] - box_location[1]
-            box_location = [max(box_location[0] - int(0.2 * width), 0),
-                            max(box_location[1] - int(0.2 * height), 0),
-                            min(box_location[2] + int(0.2 * width), original_image.size[0]),
-                            min(box_location[3] + int(0.2 * height), original_image.size[1])]
+            box_location = [max(box_location[0] - int(0.13 * width), 0),
+                            max(box_location[1] - int(0.13 * height), 0),
+                            min(box_location[2] + int(0.13 * width), original_image.size[0]),
+                            min(box_location[3] + int(0.13 * height), original_image.size[1])]
             crops.append(original_image.crop(box_location))
 
-        # Suppress specific classes, if needed
-        for i in range(det_boxes.size(0)):
-            if suppress is not None:
-                if det_labels[i] in suppress:
-                    continue
+    # Suppress specific classes, if needed
+    for k, vs in predictions.items():
+        for v in vs:
 
             # Boxes
-            box_location = det_boxes[i].tolist()
-            draw.rectangle(xy=box_location, outline=label_color_map[det_labels[i]])
+            box_location = v[1].tolist()
+            draw.rectangle(xy=box_location, outline=label_color_map[k])
             draw.rectangle(xy=[l + 1. for l in box_location], outline=label_color_map[
-                det_labels[i]])  # a second rectangle at an offset of 1 pixel to increase line thickness
+                k])  # a second rectangle at an offset of 1 pixel to increase line thickness
             # draw.rectangle(xy=[l + 2. for l in box_location], outline=label_color_map[
             #     det_labels[i]])  # a third rectangle at an offset of 1 pixel to increase line thickness
             # draw.rectangle(xy=[l + 3. for l in box_location], outline=label_color_map[
             #     det_labels[i]])  # a fourth rectangle at an offset of 1 pixel to increase line thickness
 
             # Text
-            det_scores_numpy = det_scores[0].cpu().detach().numpy()
-            text_size = font.getsize((det_labels[i] + str(det_scores_numpy[i])).upper())
+            text_size = font.getsize((k + ' ' + str(v[0])).upper())
             text_location = [box_location[0] + 2., box_location[1] - text_size[1]]
             textbox_location = [box_location[0], box_location[1] - text_size[1], box_location[0] + text_size[0] + 4.,
                                 box_location[1]]
-            draw.rectangle(xy=textbox_location, fill=label_color_map[det_labels[i]])
-            draw.text(xy=text_location, text=(det_labels[i] + str(det_scores_numpy[i])).upper(), fill='white',
+            draw.rectangle(xy=textbox_location, fill=label_color_map[k])
+            draw.text(xy=text_location, text=(k + ' ' + str(v[0])).upper(), fill='white',
                       font=font)
 
-        del draw
+    del draw
+    # else:
+    #
+    #     # cropping images
+    #     for i in range(det_boxes.size(0)):
+    #         if suppress is not None:
+    #             if det_labels[i] in suppress:
+    #                 continue
+    #
+    #         box_location = det_boxes[i].tolist()
+    #         width = box_location[2] - box_location[0]
+    #         height = box_location[3] - box_location[1]
+    #         box_location = [max(box_location[0] - int(0.2 * width), 0),
+    #                         max(box_location[1] - int(0.2 * height), 0),
+    #                         min(box_location[2] + int(0.2 * width), original_image.size[0]),
+    #                         min(box_location[3] + int(0.2 * height), original_image.size[1])]
+    #         crops.append(original_image.crop(box_location))
+    #
+    #     # Suppress specific classes, if needed
+    #     for i in range(det_boxes.size(0)):
+    #         if suppress is not None:
+    #             if det_labels[i] in suppress:
+    #                 continue
+    #
+    #         # Boxes
+    #         box_location = det_boxes[i].tolist()
+    #         draw.rectangle(xy=box_location, outline=label_color_map[det_labels[i]])
+    #         draw.rectangle(xy=[l + 1. for l in box_location], outline=label_color_map[
+    #             det_labels[i]])  # a second rectangle at an offset of 1 pixel to increase line thickness
+    #         # draw.rectangle(xy=[l + 2. for l in box_location], outline=label_color_map[
+    #         #     det_labels[i]])  # a third rectangle at an offset of 1 pixel to increase line thickness
+    #         # draw.rectangle(xy=[l + 3. for l in box_location], outline=label_color_map[
+    #         #     det_labels[i]])  # a fourth rectangle at an offset of 1 pixel to increase line thickness
+    #
+    #         # Text
+    #         det_scores_numpy = det_scores[0].cpu().detach().numpy()
+    #         text_size = font.getsize((det_labels[i] + str(det_scores_numpy[i])).upper())
+    #         text_location = [box_location[0] + 2., box_location[1] - text_size[1]]
+    #         textbox_location = [box_location[0], box_location[1] - text_size[1], box_location[0] + text_size[0] + 4.,
+    #                             box_location[1]]
+    #         draw.rectangle(xy=textbox_location, fill=label_color_map[det_labels[i]])
+    #         draw.text(xy=text_location, text=(det_labels[i] + str(det_scores_numpy[i])).upper(), fill='white',
+    #                   font=font)
 
-    return annotated_image, crops
+    #   del draw
+
+    return annotated_image, crops, predictions
 
 
 if __name__ == '__main__':
@@ -191,5 +191,5 @@ if __name__ == '__main__':
         #     c.save(f'./model_cropped/c{i}_{f}')
 
 
-        annotaded_image, crops = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200, max_predictions=True)
+        annotaded_image, crops, preds = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200, max_predictions=True)
         annotaded_image.save(f'./model_annotated_points/{f}')
