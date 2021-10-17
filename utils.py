@@ -834,11 +834,11 @@ def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 
                 chosen_two = (point_name1, point_name2)
                 chosen_a_t = (a, t)
 
-    all_coors = {'ndp': xys['ndp'],
-                 'gpc': xys['gpc'],
-                 'lpc': xys['lpc'],
-                 'cpc': xys['cpc'],
-                 'ppc': xys['ppc'],
-                 'you': xys['you']}
+    all_coors = {'ndp': coors['ndp'],
+                 'gpc': coors['gpc'],
+                 'lpc': coors['lpc'],
+                 'cpc': coors['cpc'],
+                 'ppc': coors['ppc'],
+                 'you': coors['you']}
 
     return coors[-1], all_coors, loss, (chosen_two, chosen_a_t) # you_xy, all_xys, loss, two_chosen_points_for_transform
