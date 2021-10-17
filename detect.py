@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load model checkpoint
-checkpoint = 'checkpoint_ssd300_2.pth.tar'
+checkpoint = 'checkpoint_ssd300.pth.tar'
 checkpoint = torch.load(checkpoint)
 start_epoch = checkpoint['epoch'] + 1
 print('\nLoaded checkpoint from epoch %d.\n' % start_epoch)
@@ -47,7 +47,7 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_pre
 
     # Move detections to the CPU
     det_boxes = det_boxes[0].to('cpu')
-    det_labels = det_labels[0].to('cpu')
+    #det_labels = det_labels[0].to('cpu')
 
     if max_predictions:
         det_scores = det_scores[0].cpu().detach().numpy()
