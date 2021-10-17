@@ -805,6 +805,7 @@ def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 
     loss = np.Inf
     coors = None
     chosen_two = None
+    chosen_a_t = None
     for idx1, point_name1 in enumerate(constant_points):
         for idx2, point_name2 in enumerate(constant_points):
             if idx2 <= idx1:
@@ -827,10 +828,11 @@ def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 
                                                            abs_positions['ppc']],
                                               pred_points=new_xys[:-1])
 
-            if loss > new_loss:
+            if new_loss < loss:
                 coors = new_xys
                 loss = new_loss
                 chosen_two = (point_name1, point_name2)
+                chosen_a_t = (a, t)
 
     all_coors = {'ndp': xys['ndp'],
                  'gpc': xys['gpc'],
@@ -839,4 +841,4 @@ def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 
                  'ppc': xys['ppc'],
                  'you': xys['you']}
 
-    return coors[-1], all_coors, loss, chosen_two # you_xy, all_xys, loss, two_chosen_points_for_transform
+    return coors[-1], all_coors, loss, (chosen_two, chosen_a_t) # you_xy, all_xys, loss, two_chosen_points_for_transform
