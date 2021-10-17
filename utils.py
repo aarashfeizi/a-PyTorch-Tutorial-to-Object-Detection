@@ -729,14 +729,14 @@ def clip_gradient(optimizer, grad_clip):
 
 
 ##
-# 1,1 top left (-4, 4)
-# 348,348 bottom right (4, -4)
+# 0,0 top left (0, 0)
+# 348,348 bottom right (8, 8)
 # 44,61 NDP
 # 57,86 GPC
 # 160,104 LPC
 # 238,232 CPC
 # 306,327 PPC
-# 174,174 (0, 0)
+# 174,174 (4, 4)
 
 
 # -174,174 top left (-4, 4)
@@ -757,11 +757,22 @@ def clip_gradient(optimizer, grad_clip):
 # 3.03,-3.52 PPC
 # 0,0 (0, 0)
 
-NDP_ABS = np.array([-2.99, 2.58])
-GPC_ABS = np.array([-2.69, 2.02])
-LPC_ABS = np.array([-0.32, 1.61])
-CPC_ABS = np.array([1.47, -1.33])
-PPC_ABS = np.array([3.03, -3.52])
+
+# 0,0 top left (0, 0)
+# 8, 8 bottom right (8, 8)
+# 1.01, 1.40 NDP
+# 1.31, 1.98 GPC
+# 3.68, 2.39 LPC
+# 5.47, 5.33 CPC
+# 7.03, 7.52 PPC
+# 4, 4 (4, 4)
+
+
+NDP_ABS = np.array([1.01, 1.40])
+GPC_ABS = np.array([1.31, 1.98])
+LPC_ABS = np.array([3.68, 2.39])
+CPC_ABS = np.array([5.47, 5.33])
+PPC_ABS = np.array([7.03, 7.52])
 
 constant_points = ['ndp', 'gpc', 'lpc', 'cpc', 'ppc']
 abs_positions = {'ndp': NDP_ABS,
