@@ -1,4 +1,6 @@
 from torchvision import transforms
+
+import utils
 from utils import *
 from PIL import Image, ImageDraw, ImageFont
 
@@ -192,4 +194,13 @@ if __name__ == '__main__':
 
 
         annotaded_image, crops, preds = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200, max_predictions=True)
+        new_preds = {}
+        for k, v in preds.items():
+            v2 = v[0][1].cpu().detach().numpy()
+            v2 = np.array([(v2[0] + v2[2]) / 2,
+                          (v2[1] + v2[3]) / 2])
+            new_preds[k.lower()] = v2
+
+        you, transformed_preds, loss, chosen_two = utils.find_you_coordinates(new_preds)
+
         annotaded_image.save(f'./model_annotated_points/{f}')

@@ -203,7 +203,6 @@ def calculate_mAP(det_boxes, det_labels, det_scores, true_boxes, true_labels, tr
             true_class_difficulties = true_difficulties[true_labels == c]  # (n_class_objects)
             n_easy_class_objects = (1 - true_class_difficulties).sum().item()  # ignore difficult objects
 
-
         # Keep track of which true objects with this class have already been 'detected'
         # So far, none
         true_class_boxes_detected = torch.zeros((true_class_images.size(0)), dtype=torch.uint8).to(
@@ -771,6 +770,7 @@ abs_positions = {'ndp': NDP_ABS,
                  'cpc': CPC_ABS,
                  'ppc': PPC_ABS}
 
+
 def get_distance(A, B):
     x_a = A[0]
     y_a = A[1]
@@ -780,6 +780,7 @@ def get_distance(A, B):
     d2 = (x_a - x_b) ** 2 + (y_a - y_b) ** 2
 
     return math.sqrt(d2)
+
 
 def change_coordinates(p1, p2, q1, q2, old_coordinates):
     a = get_distance(p2, q2) / get_distance(p1, q1)
@@ -791,6 +792,7 @@ def change_coordinates(p1, p2, q1, q2, old_coordinates):
 
     return new_coordinates, (a, t)
 
+
 def coordinate_change_loss(true_points, pred_points):
     loss = 0
     for tp, pp in zip(true_points, pred_points):
@@ -799,9 +801,10 @@ def coordinate_change_loss(true_points, pred_points):
     return loss
 
 
-def find_you_coordinates(xys): # coordinates is a dictionary with keys: 'ndp', 'gpc', 'lpc', 'cpc', 'ppc', 'you'
+def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 'gpc', 'lpc', 'cpc', 'ppc', 'you'
     loss = np.Inf
     coors = None
+    chosen_two = None
     for idx1, point_name1 in enumerate(constant_points):
         for idx2, point_name2 in enumerate(constant_points):
             if idx2 <= idx1:
@@ -822,12 +825,18 @@ def find_you_coordinates(xys): # coordinates is a dictionary with keys: 'ndp', '
                                                            abs_positions['lpc'],
                                                            abs_positions['cpc'],
                                                            abs_positions['ppc']],
-                                          pred_points=new_xys[:-1])
+                                              pred_points=new_xys[:-1])
 
             if loss > new_loss:
                 coors = new_xys
                 loss = new_loss
+                chosen_two = (point_name1, point_name2)
 
+    all_coors = {'ndp': xys['ndp'],
+                 'gpc': xys['gpc'],
+                 'lpc': xys['lpc'],
+                 'cpc': xys['cpc'],
+                 'ppc': xys['ppc'],
+                 'you': xys['you']}
 
-
-    return coors[-1], coors, loss  # you_xy, all_xys, loss
+    return coors[-1], all_coors, loss, chosen_two # you_xy, all_xys, loss, two_chosen_points_for_transform
