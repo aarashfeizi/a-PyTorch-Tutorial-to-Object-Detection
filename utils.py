@@ -867,7 +867,7 @@ def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 
     for n in constant_points:
         if n not in xys.keys():
             return None, None, loss, None
-    for point_type, abs_positions in enumerate([abs_positions_1, abs_positions_2, abs_positions_3]):
+    for point_type, abs_positions in enumerate([abs_positions_1, abs_positions_2, abs_positions_3], 1):
         for idx1, point_name1 in enumerate(constant_points):
             for idx2, point_name2 in enumerate(constant_points):
                 if idx2 <= idx1:
