@@ -1,3 +1,4 @@
+import pandas as pd
 from torchvision import transforms
 
 import utils
@@ -49,7 +50,7 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_pre
 
     # Move detections to the CPU
     det_boxes = det_boxes[0].to('cpu')
-    #det_labels = det_labels[0].to('cpu')
+    # det_labels = det_labels[0].to('cpu')
 
     if max_predictions:
         det_scores = det_scores[0].cpu().detach().numpy()
@@ -104,7 +105,6 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_pre
     # Suppress specific classes, if needed
     for k, vs in predictions.items():
         for v in vs:
-
             # Boxes
             box_location = v[1].tolist()
             draw.rectangle(xy=box_location, outline=label_color_map[k])
@@ -182,6 +182,14 @@ if __name__ == '__main__':
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/xy_dataset/images_TEST/'
     files = os.listdir(folder_path)
     files = [f for f in files if f.endswith('png') or f.endswith('.jpeg') or f.endswith('.jpg')]
+    you_preds = {'file': [],
+                 'ndp': [],
+                 'gpc': [],
+                 'lpc': [],
+                 'cpc': [],
+                 'ppc': [],
+                 'you': [],
+                 'chosen_points': []}
     for f in files:
         print(f)
         img_path = os.path.join(folder_path, f)
@@ -192,15 +200,28 @@ if __name__ == '__main__':
         # for i, c in enumerate(crops):
         #     c.save(f'./model_cropped/c{i}_{f}')
 
-
-        annotaded_image, crops, preds = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200, max_predictions=True)
+        annotaded_image, crops, preds = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200,
+                                               max_predictions=True)
         new_preds = {}
+
         for k, v in preds.items():
             v2 = v[0][1].cpu().detach().numpy()
             v2 = np.array([(v2[0] + v2[2]) / 2,
-                          (v2[1] + v2[3]) / 2])
+                           (v2[1] + v2[3]) / 2])
             new_preds[k.lower()] = v2
 
         you, transformed_preds, loss, chosen_two = utils.find_you_coordinates(new_preds)
 
+        if transformed_preds is not None:
+            you_preds['file'].append(f)
+            for k, v in transformed_preds.items():
+                you_preds[k].append(v)
+
+            you_preds['chosen_points'] = chosen_two[0]
+
+
+
         annotaded_image.save(f'./model_annotated_points/{f}')
+
+    preds_df = pd.DataFrame(data=you_preds)
+    preds_df.to_csv(f'./model_annotated_points/you_labels.csv', header=True, index=False)
