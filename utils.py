@@ -862,11 +862,11 @@ def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 
     chosen_a_t = None
 
     if 'you' not in xys.keys():
-        return None, None, loss, None
+        return None, None, loss, (None, None)
 
     for n in constant_points:
         if n not in xys.keys():
-            return None, None, loss, None
+            return None, None, loss, (None, None)
     for point_type, abs_positions in enumerate([abs_positions_1, abs_positions_2, abs_positions_3], 1):
         for idx1, point_name1 in enumerate(constant_points):
             for idx2, point_name2 in enumerate(constant_points):
