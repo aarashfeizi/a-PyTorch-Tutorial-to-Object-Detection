@@ -189,6 +189,7 @@ if __name__ == '__main__':
                  'cpc': [],
                  'ppc': [],
                  'you': [],
+                 'loss': [],
                  'chosen_points': []}
     for f in files:
         print(f)
