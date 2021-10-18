@@ -202,22 +202,24 @@ if __name__ == '__main__':
 
         annotaded_image, crops, preds = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200,
                                                max_predictions=True)
-        new_preds = {}
 
-        for k, v in preds.items():
-            v2 = v[0][1].cpu().detach().numpy()
-            v2 = np.array([(v2[0] + v2[2]) / 2,
-                           (v2[1] + v2[3]) / 2])
-            new_preds[k.lower()] = v2
+        if preds is not None:
+            new_preds = {}
 
-        you, transformed_preds, loss, chosen_two = utils.find_you_coordinates(new_preds)
+            for k, v in preds.items():
+                v2 = v[0][1].cpu().detach().numpy()
+                v2 = np.array([(v2[0] + v2[2]) / 2,
+                               (v2[1] + v2[3]) / 2])
+                new_preds[k.lower()] = v2
 
-        if transformed_preds is not None:
-            you_preds['file'].append(f)
-            for k, v in transformed_preds.items():
-                you_preds[k].append(v)
+            you, transformed_preds, loss, chosen_two = utils.find_you_coordinates(new_preds)
 
-            you_preds['chosen_points'] = chosen_two[0]
+            if transformed_preds is not None:
+                you_preds['file'].append(f)
+                for k, v in transformed_preds.items():
+                    you_preds[k].append(v)
+
+                you_preds['chosen_points'] = chosen_two[0]
 
 
 
