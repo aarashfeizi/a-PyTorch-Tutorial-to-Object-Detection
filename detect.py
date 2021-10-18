@@ -220,6 +220,7 @@ if __name__ == '__main__':
                     you_preds[k].append(v)
 
                 you_preds['chosen_points'].append(chosen_two[0])
+                you_preds['loss'].append(loss)
 
 
 
