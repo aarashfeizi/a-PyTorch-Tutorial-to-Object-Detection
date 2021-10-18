@@ -728,57 +728,100 @@ def clip_gradient(optimizer, grad_clip):
                 param.grad.data.clamp_(-grad_clip, grad_clip)
 
 
-##
+## 1
 # 0,0 top left (0, 0)
 # 348,348 bottom right (8, 8)
 # 44,61 NDP
-# 57,86 GPC
+# 57,87 GPC
 # 160,104 LPC
 # 238,232 CPC
-# 306,327 PPC
+# 305,326 PPC
 # 174,174 (4, 4)
 
+# 2
+# 0,0 top left (0, 0)
+# 348,348 bottom right (8, 8)
+# 68,34 NDP
+# 57,87 GPC
+# 174,100 LPC
+# 231,232 CPC
+# 305,326 PPC
+# 174,174 (4, 4)
 
-# -174,174 top left (-4, 4)
-# 174,-174 bottom right (4, -4)
-# -130,113 NDP
-# -117,88 GPC
-# -14,70 LPC
-# 64,-58 CPC
-# 132,-153 PPC
-# 0,0 (0, 0)
+# 3
+# 0,0 top left (0, 0)
+# 348,348 bottom right (8, 8)
+# 46,55 NDP
+# 57,87 GPC
+# 174,97 LPC
+# 237,232 CPC
+# 305,326 PPC
+# 174,174 (4, 4)
 
-# -174,174 top left (-4, 4)
-# 174,-174 bottom right (4, -4)
-# -2.99,2.58 NDP
-# -2.69,2.02 GPC
-# -0.32,1.61 LPC
-# 1.47,-1.33 CPC
-# 3.03,-3.52 PPC
-# 0,0 (0, 0)
-
-
+# -----------
+# 1
 # 0,0 top left (0, 0)
 # 8, 8 bottom right (8, 8)
+# 1.31, 2.00 GPC
+# 7.01, 7.49 PPC
 # 1.01, 1.40 NDP
-# 1.31, 1.98 GPC
 # 3.68, 2.39 LPC
 # 5.47, 5.33 CPC
-# 7.03, 7.52 PPC
 # 4, 4 (4, 4)
 
+# 2
+# 0, 0 top left (0, 0)
+# 8, 8 bottom right (8, 8)
+# 1.31, 2.00 GPC
+# 7.01, 7.49 PPC
+# 1.56, 0.78 NDP
+# 4.00, 2.30 LPC
+# 5.31, 5.33 CPC
+# 174,174 (4, 4)
 
-NDP_ABS = np.array([1.01, 1.40])
-GPC_ABS = np.array([1.31, 1.98])
-LPC_ABS = np.array([3.68, 2.39])
-CPC_ABS = np.array([5.47, 5.33])
-PPC_ABS = np.array([7.03, 7.52])
+# 3
+# 0,0 top left (0, 0)
+# 348,348 bottom right (8, 8)
+# 1.31, 2.00 GPC
+# 7.01, 7.49 PPC
+# 1.06, 1.26 NDP
+# 4.00, 2.23 LPC
+# 5.45, 5.33 CPC
+# 174,174 (4, 4)
+
+GPC_ABS = np.array([1.31, 2.00])
+PPC_ABS = np.array([7.01, 7.49])
+
+NDP_ABS_1 = np.array([1.01, 1.40])
+LPC_ABS_1 = np.array([3.68, 2.39])
+CPC_ABS_1 = np.array([5.47, 5.33])
+
+NDP_ABS_2 = np.array([1.56, 0.78])
+LPC_ABS_2 = np.array([4.00, 2.30])
+CPC_ABS_2 = np.array([5.31, 5.33])
+
+NDP_ABS_3 = np.array([1.06, 1.26])
+LPC_ABS_3 = np.array([4.00, 2.23])
+CPC_ABS_3 = np.array([5.45, 5.33])
+
 
 constant_points = ['ndp', 'gpc', 'lpc', 'cpc', 'ppc']
-abs_positions = {'ndp': NDP_ABS,
+abs_positions_1 = {'ndp': NDP_ABS_1,
                  'gpc': GPC_ABS,
-                 'lpc': LPC_ABS,
-                 'cpc': CPC_ABS,
+                 'lpc': LPC_ABS_1,
+                 'cpc': CPC_ABS_1,
+                 'ppc': PPC_ABS}
+
+abs_positions_2 = {'ndp': NDP_ABS_2,
+                 'gpc': GPC_ABS,
+                 'lpc': LPC_ABS_2,
+                 'cpc': CPC_ABS_2,
+                 'ppc': PPC_ABS}
+
+abs_positions_3 = {'ndp': NDP_ABS_3,
+                 'gpc': GPC_ABS,
+                 'lpc': LPC_ABS_3,
+                 'cpc': CPC_ABS_3,
                  'ppc': PPC_ABS}
 
 
@@ -817,33 +860,41 @@ def find_you_coordinates(xys):  # coordinates is a dictionary with keys: 'ndp', 
     coors = None
     chosen_two = None
     chosen_a_t = None
-    for idx1, point_name1 in enumerate(constant_points):
-        for idx2, point_name2 in enumerate(constant_points):
-            if idx2 <= idx1:
-                continue
-            new_xys, (a, t) = change_coordinates(p1=xys[point_name1],
-                                                 p2=abs_positions[point_name1],
-                                                 q1=xys[point_name2],
-                                                 q2=abs_positions[point_name2],
-                                                 old_coordinates=[xys['ndp'],
-                                                                  xys['gpc'],
-                                                                  xys['lpc'],
-                                                                  xys['cpc'],
-                                                                  xys['ppc'],
-                                                                  xys['you']])
 
-            new_loss = coordinate_change_loss(true_points=[abs_positions['ndp'],
-                                                           abs_positions['gpc'],
-                                                           abs_positions['lpc'],
-                                                           abs_positions['cpc'],
-                                                           abs_positions['ppc']],
-                                              pred_points=new_xys[:-1])
+    if 'you' not in xys.keys():
+        return None, None, loss, None
 
-            if new_loss < loss:
-                coors = new_xys
-                loss = new_loss
-                chosen_two = (point_name1, point_name2)
-                chosen_a_t = (a, t)
+    for n in constant_points:
+        if n not in xys.keys():
+            return None, None, loss, None
+    for point_type, abs_positions in enumerate([abs_positions_1, abs_positions_2, abs_positions_3]):
+        for idx1, point_name1 in enumerate(constant_points):
+            for idx2, point_name2 in enumerate(constant_points):
+                if idx2 <= idx1:
+                    continue
+                new_xys, (a, t) = change_coordinates(p1=xys[point_name1],
+                                                     p2=abs_positions[point_name1],
+                                                     q1=xys[point_name2],
+                                                     q2=abs_positions[point_name2],
+                                                     old_coordinates=[xys['ndp'],
+                                                                      xys['gpc'],
+                                                                      xys['lpc'],
+                                                                      xys['cpc'],
+                                                                      xys['ppc'],
+                                                                      xys['you']])
+
+                new_loss = coordinate_change_loss(true_points=[abs_positions['ndp'],
+                                                               abs_positions['gpc'],
+                                                               abs_positions['lpc'],
+                                                               abs_positions['cpc'],
+                                                               abs_positions['ppc']],
+                                                  pred_points=new_xys[:-1])
+
+                if new_loss < loss:
+                    coors = new_xys
+                    loss = new_loss
+                    chosen_two = (point_name1 + str(point_type), point_name2 + str(point_type))
+                    chosen_a_t = (a, t)
 
     all_coors = {'ndp': coors[0],
                  'gpc': coors[1],
