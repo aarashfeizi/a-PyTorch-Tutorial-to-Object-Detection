@@ -7,14 +7,23 @@ from PIL import Image, ImageDraw, ImageFont
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load model checkpoint
-checkpoint = 'checkpoint_ssd300.pth.tar'
-checkpoint = torch.load(checkpoint)
-start_epoch = checkpoint['epoch'] + 1
-print('\nLoaded checkpoint from epoch %d.\n' % start_epoch)
-model = checkpoint['model']
-model = model.to(device)
-model.eval()
+# Load model checkpoint grid
+checkpoint_grid = 'checkpoint_ssd300_grid_detection.pth.tar'
+checkpoint_grid = torch.load(checkpoint_grid)
+start_epoch_grid = checkpoint_grid['epoch'] + 1
+print('\nLoaded grid checkpoint from epoch %d.\n' % start_epoch_grid)
+model_grid = checkpoint_grid['model']
+model_grid = model_grid.to(device)
+model_grid.eval()
+
+# Load model checkpoint points
+checkpoint_point = 'checkpoint_ssd300_point_detection.pth.tar'
+checkpoint_point = torch.load(checkpoint_point)
+start_epoch_point = checkpoint_point['epoch'] + 1
+print('\nLoaded checkpoint from epoch %d.\n' % start_epoch_point)
+model_point = checkpoint_point['model']
+model_point = model_point.to(device)
+model_point.eval()
 
 # Transforms
 resize = transforms.Resize((300, 300))
@@ -23,7 +32,7 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                  std=[0.229, 0.224, 0.225])
 
 
-def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_predictions=False):
+def detect(model, original_image, min_score, max_overlap, top_k, suppress=None, max_predictions=False):
     """
     Detect objects in an image with a trained SSD300, and visualize the results.
 
@@ -174,11 +183,11 @@ def detect(original_image, min_score, max_overlap, top_k, suppress=None, max_pre
 
 
 if __name__ == '__main__':
-    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/real_images'
+    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/real_images'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/gen_dataset/images_TEST/'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
-    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/model_cropped_2/'
+    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/model_cropped_2/'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/xy_dataset/images_TEST/'
     files = os.listdir(folder_path)
     files = [f for f in files if f.endswith('png') or f.endswith('.jpeg') or f.endswith('.jpg')]
@@ -201,31 +210,36 @@ if __name__ == '__main__':
         # for i, c in enumerate(crops):
         #     c.save(f'./model_cropped/c{i}_{f}')
 
-        annotaded_image, crops, preds = detect(original_image, min_score=0.2, max_overlap=0.5, top_k=200,
+        annotaded_image_grid, crops, _ = detect(model_grid, original_image, min_score=0.9, max_overlap=0.5, top_k=200,
                                                max_predictions=True)
 
-        if preds is not None:
-            new_preds = {}
+        if len(crops) != 0:
+            annotaded_image_points, crops, preds = detect(model_point, crops[0], min_score=0.2, max_overlap=0.5, top_k=200,
+                                                   max_predictions=True)
 
-            for k, v in preds.items():
-                v2 = v[0][1].cpu().detach().numpy()
-                v2 = np.array([(v2[0] + v2[2]) / 2,
-                               (v2[1] + v2[3]) / 2])
-                new_preds[k.lower()] = v2
+            if preds is not None:
+                new_preds = {}
 
-            you, transformed_preds, loss, chosen_two = utils.find_you_coordinates(new_preds)
+                for k, v in preds.items():
+                    v2 = v[0][1].cpu().detach().numpy()
+                    v2 = np.array([(v2[0] + v2[2]) / 2,
+                                   (v2[1] + v2[3]) / 2])
+                    new_preds[k.lower()] = v2
 
-            if transformed_preds is not None:
-                you_preds['file'].append(f)
-                for k, v in transformed_preds.items():
-                    you_preds[k].append(v)
+                you, transformed_preds, loss, chosen_two = utils.find_you_coordinates(new_preds)
 
-                you_preds['chosen_points'].append(chosen_two[0])
-                you_preds['loss'].append(loss)
+                if transformed_preds is not None:
+                    you_preds['file'].append(f)
+                    for k, v in transformed_preds.items():
+                        you_preds[k].append(v)
+
+                    you_preds['chosen_points'].append(chosen_two[0])
+                    you_preds['loss'].append(loss)
 
 
 
-        annotaded_image.save(f'./model_annotated_points/{f}')
+            annotaded_image_grid.save(f'./model_annotated_grid_real/{f}')
+            annotaded_image_points.save(f'./model_annotated_points_real/{f}')
 
     preds_df = pd.DataFrame(data=you_preds)
-    preds_df.to_csv(f'./model_annotated_points/you_labels.csv', header=True, index=False)
+    preds_df.to_csv(f'./model_annotated_points_real/you_labels.csv', header=True, index=False)
