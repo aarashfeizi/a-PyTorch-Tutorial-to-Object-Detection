@@ -219,7 +219,7 @@ if __name__ == '__main__':
                 for k, v in transformed_preds.items():
                     you_preds[k].append(v)
 
-                you_preds['chosen_points'] = chosen_two[0]
+                you_preds['chosen_points'].append(chosen_two[0])
 
 
 
