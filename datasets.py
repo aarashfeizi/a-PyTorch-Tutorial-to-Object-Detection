@@ -201,28 +201,28 @@ class PointDataset(Dataset):
         assert len(self.images) == len(self.boxes)
         assert len(self.images) == len(self.labels)
 
-    def __getitem__(self, i):
+    def __getitem__(self, index):
         # Read image
-        image = Image.open(os.path.join(self.data_folder, self.images[i]), mode='r')
+        image = Image.open(os.path.join(self.data_folder, self.images[index]), mode='r')
         image = image.convert('RGB')
 
-        labels = self.labels[i]
-        boxes = self.boxes[i]
+        labels = self.labels[index]
+        boxes = self.boxes[index]
         for i in range(len(labels)):
             if labels[i] != labels[i]:
-                labels = labels[:i] + labels[i + 1:]
-                boxes = boxes[:i] + boxes[i + 1:]
+                labels = np.concatenate([labels[:i], labels[i + 1:]])
+                boxes = np.concatenate([boxes[:i], boxes[i + 1:]])
                 break
 
         # Read objects in this image (bounding boxes, labels, difficulties)
         boxes = torch.FloatTensor(boxes)  # (n_objects, 4)
         labels = torch.LongTensor([labels])[0]  # (n_objects)
-
-        for i in range(len(labels)):
-            if labels[i] is None:
-                labels = labels[:i] + labels[i + 1:]
-                boxes = boxes[:i] + boxes[i + 1:]
-                break # there's at most 1 None value
+        #
+        # for i in range(len(labels)):
+        #     if labels[i] is None:
+        #         labels = labels[:i] + labels[i + 1:]
+        #         boxes = boxes[:i] + boxes[i + 1:]
+        #         break # there's at most 1 None value
 
         # Apply transformations
         image, boxes, labels, _ = transform(image, boxes, labels, None, split=self.split)
