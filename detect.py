@@ -200,6 +200,13 @@ if __name__ == '__main__':
                  'you': [],
                  'loss': [],
                  'chosen_points': []}
+
+    grid_locs = {'file': [],
+                 'x_min': [],
+                 'y_min': [],
+                 'x_max': [],
+                 'y_max': []}
+
     for f in files:
         print(f)
         img_path = os.path.join(folder_path, f)
@@ -210,8 +217,18 @@ if __name__ == '__main__':
         # for i, c in enumerate(crops):
         #     c.save(f'./model_cropped/c{i}_{f}')
 
-        annotaded_image_grid, crops, _ = detect(model_grid, original_image, min_score=0.9, max_overlap=0.5, top_k=200,
+        annotaded_image_grid, crops, grid_preds = detect(model_grid, original_image, min_score=0.9, max_overlap=0.5, top_k=200,
                                                max_predictions=True)
+
+        if grid_preds is not None:
+            grid_locs['file'].append(f)
+
+            for k, v in grid_preds.items():
+                v2 = v[0][1].cpu().detach().numpy()
+                grid_locs['x_min'] = v2[0]
+                grid_locs['y_min'] = v2[1]
+                grid_locs['x_max'] = v2[2]
+                grid_locs['y_max'] = v2[3]
 
         if len(crops) != 0:
             annotaded_image_points, crops, preds = detect(model_point, crops[0], min_score=0.2, max_overlap=0.5, top_k=200,
@@ -236,10 +253,10 @@ if __name__ == '__main__':
                     you_preds['chosen_points'].append(chosen_two[0])
                     you_preds['loss'].append(loss)
 
-
-
             annotaded_image_grid.save(f'./model_annotated_grid_real/{f}')
             annotaded_image_points.save(f'./model_annotated_points_real/{f}')
 
     preds_df = pd.DataFrame(data=you_preds)
+    grids_df = pd.DataFrame(data=grid_locs)
     preds_df.to_csv(f'./model_annotated_points_real/you_labels.csv', header=True, index=False)
+    preds_df.to_csv(f'./model_annotated_grid_real/grid_labels.csv', header=True, index=False)
