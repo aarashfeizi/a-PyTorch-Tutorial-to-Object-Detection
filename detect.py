@@ -245,6 +245,8 @@ if __name__ == '__main__':
                 grid_locs['y_max'] = v2[3]
 
         if len(crops) != 0:
+            annotaded_image_grid.save(os.path.join(grid_path, f))
+
             annotaded_image_points, crops, preds = detect(model_point, crops[0], min_score=0.2, max_overlap=0.5, top_k=200,
                                                    max_predictions=True)
 
@@ -267,7 +269,6 @@ if __name__ == '__main__':
                     you_preds['chosen_points'].append(chosen_two[0])
                     you_preds['loss'].append(loss)
 
-            annotaded_image_grid.save(os.path.join(grid_path, f))
             annotaded_image_points.save(os.path.join(points_path, f))
 
         else:
