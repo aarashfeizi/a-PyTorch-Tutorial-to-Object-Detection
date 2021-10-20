@@ -1,9 +1,12 @@
+import os
+
 import pandas as pd
 from torchvision import transforms
 
 import utils
 from utils import *
 from PIL import Image, ImageDraw, ImageFont
+import shutil
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -183,6 +186,16 @@ def detect(model, original_image, min_score, max_overlap, top_k, suppress=None, 
 
 
 if __name__ == '__main__':
+    main_path = './hand_labelled_results/'
+
+    grid_path = os.path.join(main_path, 'model_annotated_grid/')
+    points_path = os.path.join(main_path, 'model_annotated_points/')
+    nogrid_path = os.path.join(main_path, 'model_annotated_nogrid/')
+    os.mkdir(main_path)
+    os.mkdir(points_path)
+    os.mkdir(grid_path)
+    os.mkdir(nogrid_path)
+
     folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/real_images'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/gen_dataset/images_TEST/'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
@@ -207,10 +220,10 @@ if __name__ == '__main__':
                  'y_min': [],
                  'x_max': [],
                  'y_max': []}
-
     for f in files:
         print(f)
         img_path = os.path.join(folder_path, f)
+
         original_image = Image.open(img_path, mode='r')
         original_image = original_image.convert('RGB')
         # annotaded_image, crops = detect(original_image, min_score=0.999, max_overlap=0.5, top_k=200)
@@ -254,10 +267,13 @@ if __name__ == '__main__':
                     you_preds['chosen_points'].append(chosen_two[0])
                     you_preds['loss'].append(loss)
 
-            annotaded_image_grid.save(f'./model_annotated_grid_real_annot2/{f}')
-            annotaded_image_points.save(f'./model_annotated_points_real_annot2/{f}')
+            annotaded_image_grid.save(os.path.join(grid_path, f))
+            annotaded_image_points.save(os.path.join(points_path, f))
+
+        else:
+            shutil.copyfile(img_path, nogrid_path)
 
     preds_df = pd.DataFrame(data=you_preds)
     grids_df = pd.DataFrame(data=grid_locs)
-    preds_df.to_csv(f'./model_annotated_points_real_annot2/you_labels.csv', header=True, index=False)
-    preds_df.to_csv(f'./model_annotated_grid_real_annot2/grid_labels.csv', header=True, index=False)
+    preds_df.to_csv(os.path.join(points_path, 'you_labels.csv'), header=True, index=False)
+    preds_df.to_csv(os.path.join(grid_path, 'grid_labels.csv'), header=True, index=False)
