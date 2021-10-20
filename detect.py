@@ -188,6 +188,7 @@ if __name__ == '__main__':
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/model_cropped_2/'
+    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/hand_labelled/
     # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/xy_dataset/images_TEST/'
     files = os.listdir(folder_path)
     files = [f for f in files if f.endswith('png') or f.endswith('.jpeg') or f.endswith('.jpg')]
@@ -253,10 +254,10 @@ if __name__ == '__main__':
                     you_preds['chosen_points'].append(chosen_two[0])
                     you_preds['loss'].append(loss)
 
-            annotaded_image_grid.save(f'./model_annotated_grid_real/{f}')
-            annotaded_image_points.save(f'./model_annotated_points_real/{f}')
+            annotaded_image_grid.save(f'./model_annotated_grid_real_annot2/{f}')
+            annotaded_image_points.save(f'./model_annotated_points_real_annot2/{f}')
 
     preds_df = pd.DataFrame(data=you_preds)
     grids_df = pd.DataFrame(data=grid_locs)
-    preds_df.to_csv(f'./model_annotated_points_real/you_labels.csv', header=True, index=False)
-    preds_df.to_csv(f'./model_annotated_grid_real/grid_labels.csv', header=True, index=False)
+    preds_df.to_csv(f'./model_annotated_points_real_annot2/you_labels.csv', header=True, index=False)
+    preds_df.to_csv(f'./model_annotated_grid_real_annot2/grid_labels.csv', header=True, index=False)
