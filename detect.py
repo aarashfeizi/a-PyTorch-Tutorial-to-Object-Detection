@@ -271,7 +271,8 @@ if __name__ == '__main__':
             annotaded_image_points.save(os.path.join(points_path, f))
 
         else:
-            shutil.copyfile(img_path, nogrid_path)
+            print('fuck', img_path)
+            shutil.copyfile(img_path, os.path.join(nogrid_path, f))
 
     preds_df = pd.DataFrame(data=you_preds)
     grids_df = pd.DataFrame(data=grid_locs)
