@@ -188,7 +188,7 @@ if __name__ == '__main__':
     os.mkdir(nobar_path)
 
 
-    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/bar_dataset/images_TEST/'
+    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/bar_dataset/bar_images_TEST/'
 
     files = os.listdir(folder_path)
     files = [f for f in files if f.endswith('png') or f.endswith('.jpeg') or f.endswith('.jpg')]
