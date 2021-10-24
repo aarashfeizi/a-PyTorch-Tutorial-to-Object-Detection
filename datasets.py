@@ -276,7 +276,7 @@ class BarDataset(Dataset):
         self.keep_difficult = keep_difficult
 
         # Read data files
-        dataset_info = pd.read_csv(os.path.join(data_folder, self.split + '_dataset_info.csv'))
+        dataset_info = pd.read_csv(os.path.join(data_folder, f'bar_' + self.split + '_dataset_info.csv'))
 
         data = {}
         labels = {}
