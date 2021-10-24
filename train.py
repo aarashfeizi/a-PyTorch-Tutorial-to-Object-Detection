@@ -3,11 +3,12 @@ import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
 from model import SSD300, MultiBoxLoss
-from datasets import PascalVOCDataset, GridDataset, PointDataset
+from datasets import PascalVOCDataset, GridDataset, PointDataset, BarDataset
 from utils import *
 
 # Data parameters
-data_folder = './mine/xy_dataset/'  # folder with data files
+# data_folder = './mine/xy_dataset/'  # folder with data files
+data_folder = './mine/bar_dataset/'  # folder with data files
 keep_difficult = True  # use objects considered difficult to detect?
 
 # Model parameters
@@ -66,15 +67,24 @@ def main():
 
     # Custom dataloaders
 
-    train_dataset = PointDataset(data_folder,
-                                split='train',
-                                keep_difficult=keep_difficult)
+    # train_dataset = PointDataset(data_folder,
+    #                             split='train',
+    #                             keep_difficult=keep_difficult)
 
     # train_dataset = GridDataset(data_folder,
     #                                  split='train',
     #                                  keep_difficult=keep_difficult)
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=workers,
-                                               pin_memory=True, collate_fn=train_dataset.collate_fn)  # note that we're passing the collate function here
+
+    train_dataset = BarDataset(data_folder,
+                               split='train',
+                               keep_difficult=keep_difficult)
+
+    train_loader = torch.utils.data.DataLoader(train_dataset,
+                                               batch_size=batch_size,
+                                               shuffle=True,
+                                               num_workers=workers,
+                                               pin_memory=True,
+                                               collate_fn=train_dataset.collate_fn)  # note that we're passing the collate function here
 
     # Calculate total number of epochs to train and the epochs to decay learning rate at (i.e. convert iterations to epochs)
     # To convert iterations to epochs, divide iterations by the number of iterations per epoch

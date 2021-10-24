@@ -1,5 +1,5 @@
 from utils import *
-from datasets import PascalVOCDataset, GridDataset, PointDataset
+from datasets import PascalVOCDataset, GridDataset, PointDataset, BarDataset
 from tqdm import tqdm
 from pprint import PrettyPrinter
 

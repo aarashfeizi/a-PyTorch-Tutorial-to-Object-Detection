@@ -257,3 +257,96 @@ class PointDataset(Dataset):
     def __len__(self):
         return len(self.images)
 
+class BarDataset(Dataset):
+    """
+    A PyTorch Dataset class to be used in a PyTorch DataLoader to create batches.
+    """
+
+    def __init__(self, data_folder, split, keep_difficult=True):
+        """
+        :param data_folder: folder where data files are stored
+        :param split: split, one of 'TRAIN' or 'TEST'
+        :param keep_difficult: keep or discard objects that are considered difficult to detect?
+        """
+        self.split = split.upper()
+
+        assert self.split in {'TRAIN', 'TEST'}
+
+        self.data_folder = data_folder
+        self.keep_difficult = keep_difficult
+
+        # Read data files
+        dataset_info = pd.read_csv(os.path.join(data_folder, self.split + '_dataset_info.csv'))
+
+        data = {}
+        labels = {}
+        for row in dataset_info.iterrows():
+            if row[1].img not in data.keys():
+                data[row[1].img] = []
+                labels[row[1].img] = []
+
+            data[row[1].img].append([row[1].x_min,
+                                     row[1].y_min,
+                                     row[1].x_max,
+                                     row[1].y_max])
+
+            labels[row[1].img].append(20)
+
+        self.images = list(data.keys())
+        self.boxes = list(data.values())
+        self.labels = list(labels.values())
+
+        assert len(self.images) == len(self.boxes)
+        assert len(self.images) == len(self.labels)
+
+    def __getitem__(self, index):
+        # Read image
+        image = Image.open(os.path.join(self.data_folder, self.images[index]), mode='r')
+        image = image.convert('RGB')
+
+        labels = self.labels[index]
+        boxes = self.boxes[index]
+
+        # Read objects in this image (bounding boxes, labels, difficulties)
+        boxes = torch.FloatTensor(boxes)  # (n_objects, 4)
+        labels = torch.LongTensor([labels])[0]  # (n_objects)
+        #
+        # for i in range(len(labels)):
+        #     if labels[i] is None:
+        #         labels = labels[:i] + labels[i + 1:]
+        #         boxes = boxes[:i] + boxes[i + 1:]
+        #         break # there's at most 1 None value
+
+        # Apply transformations
+        image, boxes, labels, _ = transform(image, boxes, labels, None, split=self.split)
+
+        return image, boxes, labels
+
+    def collate_fn(self, batch):
+        """
+        Since each image may have a different number of objects, we need a collate function (to be passed to the DataLoader).
+
+        This describes how to combine these tensors of different sizes. We use lists.
+
+        Note: this need not be defined in this Class, can be standalone.
+
+        :param batch: an iterable of N sets from __getitem__()
+        :return: a tensor of images, lists of varying-size tensors of bounding boxes, labels, and difficulties
+        """
+
+        images = list()
+        boxes = list()
+        labels = list()
+
+        for b in batch:
+            images.append(b[0])
+            boxes.append(b[1])
+            labels.append(b[2])
+
+        images = torch.stack(images, dim=0)
+
+        return images, boxes, labels  # tensor (N, 3, 300, 300), 3 lists of N tensors each
+
+    def __len__(self):
+        return len(self.images)
+
