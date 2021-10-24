@@ -8,6 +8,8 @@ pp = PrettyPrinter()
 
 # Parameters
 data_folder = './'
+# data_folder = './mine/hand_labelled/'
+# data_folder = './mine/xy_dataset/'
 keep_difficult = True  # difficult ground truth objects must always be considered in mAP calculation, because these objects DO exist!
 batch_size = 128
 workers = 4
