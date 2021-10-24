@@ -177,8 +177,8 @@ def detect(model, original_image, min_score, max_overlap, top_k, suppress=None, 
 
 
 if __name__ == '__main__':
-    main_path = './hand_labelled_results/'
 
+    main_path = './bar_results/'
     bar_path = os.path.join(main_path, 'model_annotated_bar/')
 
     nobar_path = os.path.join(main_path, 'model_annotated_nobar/')
