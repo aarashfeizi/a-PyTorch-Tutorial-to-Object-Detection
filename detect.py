@@ -10,23 +10,14 @@ import shutil
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load model checkpoint grid
-checkpoint_grid = 'checkpoint_ssd300_grid_detection.pth.tar'
-checkpoint_grid = torch.load(checkpoint_grid)
-start_epoch_grid = checkpoint_grid['epoch'] + 1
-print('\nLoaded grid checkpoint from epoch %d.\n' % start_epoch_grid)
-model_grid = checkpoint_grid['model']
-model_grid = model_grid.to(device)
-model_grid.eval()
-
 # Load model checkpoint points
-checkpoint_point = 'checkpoint_ssd300_point_detection.pth.tar'
+checkpoint_point = 'checkpoint_ssd300.pth.tar'
 checkpoint_point = torch.load(checkpoint_point)
 start_epoch_point = checkpoint_point['epoch'] + 1
 print('\nLoaded checkpoint from epoch %d.\n' % start_epoch_point)
-model_point = checkpoint_point['model']
-model_point = model_point.to(device)
-model_point.eval()
+model = checkpoint_point['model']
+model = model.to(device)
+model.eval()
 
 # Transforms
 resize = transforms.Resize((300, 300))
@@ -188,34 +179,21 @@ def detect(model, original_image, min_score, max_overlap, top_k, suppress=None, 
 if __name__ == '__main__':
     main_path = './hand_labelled_results/'
 
-    grid_path = os.path.join(main_path, 'model_annotated_grid/')
-    points_path = os.path.join(main_path, 'model_annotated_points/')
-    nogrid_path = os.path.join(main_path, 'model_annotated_nogrid/')
-    os.mkdir(main_path)
-    os.mkdir(points_path)
-    os.mkdir(grid_path)
-    os.mkdir(nogrid_path)
+    bar_path = os.path.join(main_path, 'model_annotated_bar/')
 
-    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/real_images'
-    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/gen_dataset/images_TEST/'
-    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
-    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/img_results/'
-    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/model_cropped_2/'
-    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/hand_labelled/'
-    # folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/xy_dataset/images_TEST/'
+    nobar_path = os.path.join(main_path, 'model_annotated_nobar/')
+    os.mkdir(main_path)
+
+    os.mkdir(bar_path)
+    os.mkdir(nobar_path)
+
+
+    folder_path = f'/home/mila/f/feiziaar/projects/a-PyTorch-Tutorial-to-Object-Detection/mine/bar_dataset/images_TEST/'
+
     files = os.listdir(folder_path)
     files = [f for f in files if f.endswith('png') or f.endswith('.jpeg') or f.endswith('.jpg')]
-    you_preds = {'file': [],
-                 'ndp': [],
-                 'gpc': [],
-                 'lpc': [],
-                 'cpc': [],
-                 'ppc': [],
-                 'you': [],
-                 'loss': [],
-                 'chosen_points': []}
 
-    grid_locs = {'file': [],
+    bar_locs = {'file': [],
                  'x_min': [],
                  'y_min': [],
                  'x_max': [],
@@ -226,56 +204,33 @@ if __name__ == '__main__':
 
         original_image = Image.open(img_path, mode='r')
         original_image = original_image.convert('RGB')
-        # annotaded_image, crops = detect(original_image, min_score=0.999, max_overlap=0.5, top_k=200)
-        # annotaded_image.save(f'./model_annotated/{f}')
-        # for i, c in enumerate(crops):
-        #     c.save(f'./model_cropped/c{i}_{f}')
 
-        annotaded_image_grid, crops, grid_preds = detect(model_grid, original_image, min_score=0.9, max_overlap=0.5, top_k=200,
-                                               max_predictions=True)
+        annotaded_image_bar, crops, bar_preds = detect(model, original_image, min_score=0.9, max_overlap=0.5, top_k=200,
+                                                       max_predictions=False)
 
-        if grid_preds is not None:
-            grid_locs['file'].append(f)
+        if bar_preds is not None:
 
-            for k, v in grid_preds.items():
+            for k, v in bar_preds.items():
                 v2 = v[0][1].cpu().detach().numpy()
-                grid_locs['x_min'] = v2[0]
-                grid_locs['y_min'] = v2[1]
-                grid_locs['x_max'] = v2[2]
-                grid_locs['y_max'] = v2[3]
+
+                bar_locs['file'].append(f)
+                bar_locs['x_min'] = v2[0]
+                bar_locs['y_min'] = v2[1]
+                bar_locs['x_max'] = v2[2]
+                bar_locs['y_max'] = v2[3]
 
         if len(crops) != 0:
-            annotaded_image_grid.save(os.path.join(grid_path, f))
+            annotaded_image_bar.save(os.path.join(bar_path, f))
 
-            annotaded_image_points, crops, preds = detect(model_point, crops[0], min_score=0.2, max_overlap=0.5, top_k=200,
-                                                   max_predictions=True)
+            annotaded_image_points, crops, preds = detect(model, crops[0], min_score=0.2, max_overlap=0.5, top_k=200,
+                                                          max_predictions=True)
 
-            if preds is not None:
-                new_preds = {}
-
-                for k, v in preds.items():
-                    v2 = v[0][1].cpu().detach().numpy()
-                    v2 = np.array([(v2[0] + v2[2]) / 2,
-                                   (v2[1] + v2[3]) / 2])
-                    new_preds[k.lower()] = v2
-
-                you, transformed_preds, loss, chosen_two = utils.find_you_coordinates(new_preds)
-
-                if transformed_preds is not None:
-                    you_preds['file'].append(f)
-                    for k, v in transformed_preds.items():
-                        you_preds[k].append(v)
-
-                    you_preds['chosen_points'].append(chosen_two[0])
-                    you_preds['loss'].append(loss)
-
-            annotaded_image_points.save(os.path.join(points_path, f))
 
         else:
             print('fuck', img_path)
-            shutil.copyfile(img_path, os.path.join(nogrid_path, f))
+            shutil.copyfile(img_path, os.path.join(nobar_path, f))
 
-    preds_df = pd.DataFrame(data=you_preds)
-    grids_df = pd.DataFrame(data=grid_locs)
-    preds_df.to_csv(os.path.join(points_path, 'you_labels.csv'), header=True, index=False)
-    preds_df.to_csv(os.path.join(grid_path, 'grid_labels.csv'), header=True, index=False)
+
+    bars_df = pd.DataFrame(data=bar_locs)
+
+    bars_df.to_csv(os.path.join(bar_path, 'bars_labels.csv'), header=True, index=False)

@@ -278,4 +278,4 @@ if __name__ == '__main__':
     preds_df = pd.DataFrame(data=you_preds)
     grids_df = pd.DataFrame(data=grid_locs)
     preds_df.to_csv(os.path.join(points_path, 'you_labels.csv'), header=True, index=False)
-    preds_df.to_csv(os.path.join(grid_path, 'grid_labels.csv'), header=True, index=False)
+    grids_df.to_csv(os.path.join(grid_path, 'grid_labels.csv'), header=True, index=False)
