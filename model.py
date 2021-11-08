@@ -372,7 +372,7 @@ class SSD300(nn.Module):
         """
         Create the 8732 prior (default) boxes for the SSD300, as defined in the paper.
 
-        :return: prior boxes in center-size coordinates, a tensor of dimensions (8732, 4)
+            :return: prior boxes in center-size coordinates, a tensor of dimensions (8732, 4)
         """
         fmap_dims = {'conv4_3': 38,
                      'conv7': 19,
@@ -388,12 +388,19 @@ class SSD300(nn.Module):
                       'conv10_2': 0.725,
                       'conv11_2': 0.9}
 
-        aspect_ratios = {'conv4_3': [1., 2., 0.5],
-                         'conv7': [1., 2., 3., 0.5, .333],
-                         'conv8_2': [1., 2., 3., 0.5, .333],
-                         'conv9_2': [1., 2., 3., 0.5, .333],
-                         'conv10_2': [1., 2., 0.5],
-                         'conv11_2': [1., 2., 0.5]}
+        # aspect_ratios = {'conv4_3': [1., 2., 0.5],
+        #                  'conv7': [1., 2., 3., 0.5, .333],
+        #                  'conv8_2': [1., 2., 3., 0.5, .333],
+        #                  'conv9_2': [1., 2., 3., 0.5, .333],
+        #                  'conv10_2': [1., 2., 0.5],
+        #                  'conv11_2': [1., 2., 0.5]}
+
+        aspect_ratios = {'conv4_3': [2., 4., 0.25],
+                         'conv7': [2., 4., 3., 0.25, .333],
+                         'conv8_2': [2., 4., 3., 0.25, .333],
+                         'conv9_2': [2., 4., 3., 0.25, .333],
+                         'conv10_2': [2., 4., 0.25],
+                         'conv11_2': [2., 4., 0.25]}
 
         fmaps = list(fmap_dims.keys())
 
