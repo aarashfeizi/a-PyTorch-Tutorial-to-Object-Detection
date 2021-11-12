@@ -417,7 +417,7 @@ class SSD300(nn.Module):
 
                         # For an aspect ratio of 1, use an additional prior whose scale is the geometric mean of the
                         # scale of the current feature map and the scale of the next feature map
-                        if ratio == 1.:
+                        if ratio == 2.:
                             try:
                                 additional_scale = sqrt(obj_scales[fmap] * obj_scales[fmaps[k + 1]])
                             # For the last feature map, there is no "next" feature map
